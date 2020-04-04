@@ -1,0 +1,12 @@
+{
+  "title":{
+      "text":"Shadowpox:\nStay Home",
+      "position":[[0.5,0.2]],
+      "style":"mainTitle"
+  },
+  "playBtn":{
+    "text":"Play",
+    "position":[[0.5,0.8]],
+    "style":"menuBtn"
+  }
+}
