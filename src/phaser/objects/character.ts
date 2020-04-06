@@ -1,3 +1,5 @@
+import { gConfigTrail } from '../data/gameConfig'
+
 export enum CharacterState {
   None,
   Home,
@@ -10,7 +12,7 @@ export enum CharacterState {
 export default class Character extends Phaser.GameObjects.Sprite {
   body: Phaser.Physics.Arcade.Body;
   state: CharacterState;
-  prevState: CharacterState;
+  lastEnounter: number=0;
   particleManager: Phaser.GameObjects.Particles.ParticleEmitterManager;
   unscaleVelocity: Phaser.Math.Vector2;
   cId: number;
@@ -101,7 +103,8 @@ export default class Character extends Phaser.GameObjects.Sprite {
         this.setTint(0xffffff);
         break;
       case CharacterState.Dead:
-        this.play("dead", true);
+        this.setTexture('character','dead-figure.png');
+        this.setTint(0x000000);
         break;
 
       default:
@@ -139,6 +142,41 @@ export default class Character extends Phaser.GameObjects.Sprite {
         break;
     }
   }
+
+  getInfected(){
+
+    const precent = Math.random();
+    const currentTime = this.scene.game.getTime()/1000; 
+    // adding a buffer between checks
+    if (currentTime-this.lastEnounter>0.2){
+      if (precent <= gConfigTrail.infectionRate) {
+        let vel = this.unscaleVelocity;
+        vel.x = vel.x*0.5;
+        vel.y =vel.y*0.5;
+        this.setVelocity(vel.x, vel.y);
+        this.setState(CharacterState.Sick);
+        this.emit('gotSick');
+
+        const rate = Phaser.Math.Between(gConfigTrail.deathCall.min??3,gConfigTrail.deathCall.max??14);
+        this.scene.time.addEvent({
+          delay: 1000*rate,
+          callback: this.died,
+          callbackScope: this,
+          loop: false
+        });
+      }
+    }
+    this.lastEnounter= this.scene.game.getTime()/1000;
+  }
+
+  died(){
+    const precent = Math.random();
+    if (precent <=gConfigTrail.deathRate) {
+      this.setID(this.cId*-1);
+      this.setState(CharacterState.Dead);
+    }
+  }
+
 
   update() {
     this.updatePhysics();

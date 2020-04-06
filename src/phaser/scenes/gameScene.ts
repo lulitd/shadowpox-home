@@ -5,6 +5,7 @@ import { Physics, Scene, GameObjects, Actions, Geom } from 'phaser';
 import { gConfigGeneral, gConfigNeighbourhood, gNeighbour, debugColors, gConfigPlayer, gConfigTrail } from '../data/gameConfig'
 import Listener from "../Listener";
 import { GAME_EVENTS } from "../data/const";
+
 export default class MainScene extends Scene {
   player: PlayerCharacter;
   neighbours: GameObjects.Group;
@@ -17,6 +18,7 @@ export default class MainScene extends Scene {
   InnerBounds: Geom.Rectangle;
   OuterBounds: Geom.Rectangle;
   DebugMode: boolean = false;
+  score: number = 0;
 
   constructor() {
     super({ key: 'GameScene' });
@@ -49,6 +51,7 @@ export default class MainScene extends Scene {
     // Trail setup
     this.trailManager = this.add.particles('particle');
     this.trailManager.setDepth(0);
+
     this.trail = this.trailManager.createEmitter(
       Phaser.Utils.Objects.Merge({ tint: gConfigTrail.tint },
         {
@@ -79,13 +82,15 @@ export default class MainScene extends Scene {
         neighbour.setTint(gNeighbour.tint);
         this.neighbours.add(neighbour);
         neighbour.resizeToFitDisplay(this.scale.width, this.scale.height, this.scale.width, this.scale.height, gNeighbour.relScale);
+        neighbour.setID(this.neighbours.getLength());
+
+        neighbour.addListener('gotSick', this.addScore, this);
       },
       delay: this.gameLength * inverseNeighbours * (gConfigNeighbourhood.spawnedPrecent ?? 0.75),
     });
 
 
     // game timer set up
-
     this.timeRemaining = gConfigGeneral.gameLength;
     this.time.addEvent({
       delay: 1000,
@@ -167,20 +172,29 @@ export default class MainScene extends Scene {
       if (gameObject instanceof Character && !(gameObject instanceof PlayerCharacter)) {
 
         if (gameObject.state != CharacterState.Healthy) return;
+        let char = gameObject as Character;
 
-        const precent = Math.random();
+        char.getInfected();
 
-        if (precent <= gConfigTrail.infectionRate) {
-          let char = gameObject as Character;
-          if (this.DebugMode) char.setTint(debugColors.sick);
-          let vel = char.unscaleVelocity;
-          vel = vel.scale(0.5);
-          char.setVelocity(vel.x, vel.y);
-          char.setState(CharacterState.Sick);
-        }
       }
     });
   }
+
+  addScore() {
+    this.score++;
+    this.updateScore(this.score);
+  }
+  updateScore(amount: number) {
+    // @ts-ignore
+    if (window.phaserEvents) {
+      // @ts-ignore
+      window.phaserEvents.emit(
+        GAME_EVENTS.ON_INFECTED,
+        amount
+      );
+    }
+  }
+
 
   onCountdown() {
 
@@ -195,14 +209,32 @@ export default class MainScene extends Scene {
           this.timeRemaining
         );
       } else {
+
+
+        const infected = this.getInfectedNeighbours();
+        this.game.scene.stop('GameScene');
         // @ts-ignore
         window.phaserEvents.emit(
           GAME_EVENTS.ON_ROUND_END,
+          infected
         );
 
-        this.game.scene.stop('GameScene');
       }
     }
+  }
+
+  getInfectedNeighbours(): number[] {
+
+    let infected: number[] = [];
+
+    Actions.Call(this.neighbours.getChildren(), (neighbour: Character) => {
+
+      if (neighbour.state === CharacterState.Sick || neighbour.state === CharacterState.Dead)
+        infected.push(neighbour.cId);
+    }, this);
+
+   return Phaser.Utils.Array.Shuffle(infected);
+
   }
 
 }

@@ -6,28 +6,35 @@ import qs from 'qs';
 
 class EndScreen extends Component {
 
+  constructor(props) {
+    super(props);
 
+    const gameData = this.props.history?.location?.state; 
+    const cards = gameData?.cards||[]; 
+    const stayedHome = gameData?.statedHome||'no'; 
+    this.state={
+      cards:cards,
+      stayedHome:stayedHome
+    };
+
+  }
   render() {
     return (
       <div className="App">
         <form action="https://shadowpox.org/cards/" method="POST">
-          <input name="cards" type="text" size="32" className="inputbox" value="1,-2,3,4" /><br />
-          <input name="stayedhome" type="checkbox" value="yes" />
+          <input name="cards" type="text" size="32" className="inputbox" value={this.state.cards} /><br />
+          <input name="stayedhome" type="checkbox" value={this.state.stayedHome} />
           <label for="stayedhome">Stayed home</label><br />
           <input name="Send" type="submit" />
         </form>
-
-
-
-        <Button onClick={this.handleSubmit}>Click to view cards</Button>
+        {/* <Button onClick={this.handleSubmit}>Click to view cards</Button> */}
       </div>
     );
   }
 
   handleSubmit() {
-
-     const data = { cards: '-12,3,4,5', stayedhome: 'yes' };
-     const url = 'https://shadowpox.org/cards/';
+    const data = { cards: '-12,3,4,5', stayedhome: 'yes' };
+    const url = 'https://shadowpox.org/cards/';
 
     // const options = {
     //   method: 'POST',
@@ -51,7 +58,7 @@ class EndScreen extends Component {
       console.log(xhr.responseText)
     })
 
-    xhr.open('POST',url)
+    xhr.open('POST', url)
     // send the request
     xhr.send(JSON.stringify(data));
 

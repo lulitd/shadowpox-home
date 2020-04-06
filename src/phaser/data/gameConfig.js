@@ -1,6 +1,6 @@
 const gConfigGeneral = {
     background:0xffffff,
-    gameLength:45,
+    gameLength:20,
     debug:false,
 };
 
@@ -37,10 +37,11 @@ const gConfigTrail ={
     lifespan: 0.25,
     frequency: 500,
     limit: 100,
-    colisionCheck: 60,
+    colisionCheck: 30,
     collisonRadius: 16,
-    infectionRate: .01,
-    death: 0.02,
+    infectionRate: .2,
+    deathRate: 0.02,
+    deathCall:{min:3,max:14}
 };
 
 export { gConfigGeneral, gConfigNeighbourhood, gNeighbour, debugColors, gConfigPlayer, gConfigTrail };

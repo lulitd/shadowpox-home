@@ -13,7 +13,7 @@ const MainEntry = () => {
             <Switch>
                 <Route exact path="/" render={() => <MainMenuScreen />} />
                 <Route exact path="/game" render={() => <GameScreen/>} />
-                <Route exact path="/score" render={() => <EndScreen/>} />
+                <Route exact path="/score" render={(props) => <EndScreen {...props}/>} />
             </Switch>
         </main>
         </ThemeProvider>

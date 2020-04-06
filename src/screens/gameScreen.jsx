@@ -10,10 +10,11 @@ class GameScreen extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      stayedHome: true,
+      stayedHome: false,
       timeRemaining: gConfigGeneral.gameLength, /// in seconds eg. 90= 1 min 30 secs
       score: 0,
-      isPlaying:true,
+      isPlaying: true,
+      infected: [],
     };
   }
 
@@ -30,7 +31,7 @@ class GameScreen extends Component {
 
     window.phaserEvents.addListener(
       GAME_EVENTS.ON_ROUND_END,
-      () => this.roundFinished()
+      (infected) => this.roundFinished(infected)
     );
 
     window.phaserEvents.addListener(
@@ -82,16 +83,18 @@ class GameScreen extends Component {
     );
   }
 
-  setScore(score){
+  setScore(score) {
     this.setState({
       score: score
     });
   }
 
-  roundFinished() {
+  roundFinished(infected) {
 
+    console.log(infected);
     this.setState({
-      isPlaying:false,
+      isPlaying: false,
+      infected: infected,
     });
   }
 
@@ -106,7 +109,7 @@ class GameScreen extends Component {
 
     const min = Math.floor(timeRemaining / 60);
     let sec = timeRemaining % 60;
-    sec = (sec<10?'0':'')+sec;
+    sec = (sec < 10 ? '0' : '') + sec;
     const label = `${min}:${sec}`;
     return <Text>{label}</Text>
   }
@@ -116,11 +119,11 @@ class GameScreen extends Component {
     return <Text>{label}</Text>
   }
 
-  
-  RedirectToEndScreen() {
-    const { isPlaying } = this.state;
 
-    return isPlaying ?null:<Redirect to="/score" />;
+  RedirectToEndScreen() {
+    const { isPlaying, infected } = this.state;
+
+    return isPlaying ? null : <Redirect to={{ pathname: "/score", state: { cards: infected } }} />;
   }
 }
 

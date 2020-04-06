@@ -20,10 +20,6 @@ export default class PreloadScene extends Phaser.Scene {
       prefix: 'sick_', suffix: '.png'
   }), repeat: -1 ,frameRate:24});
   
-
-  this.anims.create({ key: 'dead', frames: this.anims.generateFrameNames('character',{
-    prefix: 'dead-figure', suffix: '.png'
-})});
       this.scene.start('GameScene');
       
     
