@@ -46,6 +46,7 @@ export default class MainScene extends Scene {
     if (this.DebugMode) {
       this.player.setTint(debugColors.player ?? 0x00ff00);
     }
+    
     this.player.isControlled(playerSettings.isControlled ?? true);
 
     // Trail setup

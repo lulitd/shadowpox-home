@@ -1,6 +1,6 @@
 const gConfigGeneral = {
     background:0xffffff,
-    gameLength:20,
+    gameLength:60,
     debug:false,
 };
 
@@ -28,7 +28,7 @@ const gConfigPlayer ={
     isControlled: true,
     respondSpeed: 75,
     respondThres: 20,
-    tint:0x000000,
+    tint:0x0077ff,
 };
 
 const gConfigTrail ={
@@ -40,7 +40,7 @@ const gConfigTrail ={
     colisionCheck: 30,
     collisonRadius: 16,
     infectionRate: .2,
-    deathRate: 0.02,
+    deathRate: 0.3,
     deathCall:{min:3,max:14}
 };
 
