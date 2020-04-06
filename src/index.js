@@ -1,9 +1,10 @@
 import React from "react";
 import ReactDOM from "react-dom";
-import { HashRouter, Switch, Route } from 'react-router-dom';
+import {Switch, Route, MemoryRouter } from 'react-router-dom';
 import {ThemeProvider} from "theme-ui";
 import theme from './theme';
 import GameScreen from "./screens/gameScreen";
+import EndScreen from "./screens/endScreen";
 import MainMenuScreen from "./screens/MainMenuScreen";
 const MainEntry = () => {
     return (
@@ -11,10 +12,11 @@ const MainEntry = () => {
         <main>
             <Switch>
                 <Route exact path="/" render={() => <MainMenuScreen />} />
-                <Route path="/game" render={() => <GameScreen/>} />
+                <Route exact path="/game" render={() => <GameScreen/>} />
+                <Route exact path="/score" render={() => <EndScreen/>} />
             </Switch>
         </main>
         </ThemeProvider>
         );
 }
-ReactDOM.render(<HashRouter ><MainEntry /></HashRouter>, document.getElementById("root"));
+ReactDOM.render(<MemoryRouter ><MainEntry /></MemoryRouter>, document.getElementById("root"));

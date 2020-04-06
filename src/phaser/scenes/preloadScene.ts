@@ -5,14 +5,25 @@ export default class PreloadScene extends Phaser.Scene {
   
     preload() {
       this.load.image('particle','assets/img/solid-circle-particle.png');
-      this.load.atlas('character', 'assets/sheet/walk.png', 'assets/sheet/walk.json');
+      this.load.atlas('character','assets/sheet/animation.png', 'assets/sheet/animation.json');
     }
   
     create() {
   
-      this.anims.create({ key: 'walk', frames: this.anims.generateFrameNames('character'), repeat: -1 ,frameRate:30});
+      this.anims.create({ key: 'walk', frames: this.anims.generateFrameNames('character',{ 
+        start: 0, end: 29, zeroPad:1,
+        prefix: 'healthy_', suffix: '.png'
+    }), repeat: -1 ,frameRate:30});
+
+    this.anims.create({ key: 'sick', frames: this.anims.generateFrameNames('character',{ 
+      start: 0, end: 47, zeroPad:1,
+      prefix: 'sick_', suffix: '.png'
+  }), repeat: -1 ,frameRate:24});
   
 
+  this.anims.create({ key: 'dead', frames: this.anims.generateFrameNames('character',{
+    prefix: 'dead-figure', suffix: '.png'
+})});
       this.scene.start('GameScene');
       
     

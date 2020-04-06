@@ -10,14 +10,15 @@ export enum CharacterState {
 export default class Character extends Phaser.GameObjects.Sprite {
   body: Phaser.Physics.Arcade.Body;
   state: CharacterState;
+  prevState: CharacterState;
   particleManager: Phaser.GameObjects.Particles.ParticleEmitterManager;
-  unscaleVelocity: Phaser.Math.Vector2; 
+  unscaleVelocity: Phaser.Math.Vector2;
   cId: number;
   readonly TEXTURE_WIDTH: number = 42;
   readonly TEXTURE_HEIGHT: number = 72;
 
 
-  constructor(scene: Phaser.Scene, x: number, y: number) {
+  constructor(scene: Phaser.Scene, x: number, y: number, velMin: number = 50, velMax: number = 100) {
     super(scene, x, y, 'character')
     this.setOrigin(0.5, 0);
     this.play("walk", true, Math.floor(Math.random() * 30));
@@ -27,12 +28,12 @@ export default class Character extends Phaser.GameObjects.Sprite {
     this.body.onWorldBounds = true;
     this.body.setCollideWorldBounds(true, 1, 1);
 
-    this.unscaleVelocity = new Phaser.Math.Vector2(1,1);
+    this.unscaleVelocity = new Phaser.Math.Vector2(1, 1);
     this.body.setVelocity(this.unscaleVelocity.x, this.unscaleVelocity.y);
 
-    const xVel = Phaser.Math.Between(50, 100) * (Math.random() > 0.5 ? 1 : -1);
+    const xVel = Phaser.Math.Between(velMin, velMax) * (Math.random() > 0.5 ? 1 : -1);
 
-    const yVel = Phaser.Math.Between(50, 100) * (Math.random() > 0.5 ? 1 : -1);
+    const yVel = Phaser.Math.Between(velMin, velMax) * (Math.random() > 0.5 ? 1 : -1);
 
 
     this.setVelocity(xVel, yVel);
@@ -43,14 +44,14 @@ export default class Character extends Phaser.GameObjects.Sprite {
     this.setState(CharacterState.Healthy);
     this.body.setMaxVelocity(100, 100);
 
-    this.resizeToFitDisplay(scene.game.scale.width,scene.game.scale.height);
+    this.resizeToFitDisplay(scene.game.scale.width, scene.game.scale.height);
   }
 
   setID(id: number) {
     this.cId = id;
   }
 
-  resizeToFitDisplay(width: number, height: number,prevWidth?: number, prevHeight?: number, displayPrecent: number = 0.05) {
+  resizeToFitDisplay(width: number, height: number, prevWidth?: number, prevHeight?: number, displayPrecent: number = 0.05) {
     const isLandscape = width > height;
     const conWidth = displayPrecent * width;
     const conHeight = displayPrecent * height;
@@ -58,8 +59,8 @@ export default class Character extends Phaser.GameObjects.Sprite {
 
     const newScale = isLandscape ? (conWidth / this.TEXTURE_WIDTH) : (conHeight / this.TEXTURE_HEIGHT);
 
-    if (prevHeight==undefined)prevHeight=height; 
-    if (prevWidth==undefined)prevWidth=width; 
+    if (prevHeight == undefined) prevHeight = height;
+    if (prevWidth == undefined) prevWidth = width;
 
     // ENSURE CHARACTER IS ON SCREEN
     const relX = this.x / prevWidth;
@@ -90,22 +91,24 @@ export default class Character extends Phaser.GameObjects.Sprite {
 
         break;
       case CharacterState.Healthy:
-
+        this.play("walk", true);
         break;
       case CharacterState.Home:
 
         break;
       case CharacterState.Sick:
-
+        this.play("sick", true);
+        this.setTint(0xffffff);
         break;
       case CharacterState.Dead:
-
+        this.play("dead", true);
         break;
 
       default:
         break;
     }
     this.flipX = this.body.velocity.x < 0;
+
   }
 
   updatePhysics() {

@@ -1,5 +1,5 @@
 import Character from "../objects/character";
-
+import {gConfigPlayer} from "../data/gameConfig"
 export default class PlayerCharacter extends Character {
 
   respondToPlayer: boolean;
@@ -7,6 +7,8 @@ export default class PlayerCharacter extends Character {
   respondSpeed: number = 75;
   constructor(scene: Phaser.Scene, x: number, y: number) {
     super(scene, x, y);
+    this.respondThres = gConfigPlayer.respondThres;
+    this.respondSpeed = gConfigPlayer.respondSpeed; 
   }
 
   isControlled(active: boolean) {
