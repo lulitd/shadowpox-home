@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Text, Flex } from "rebass";
+import { Flex } from "rebass";
 import { Redirect } from "react-router-dom";
 import { ShortText } from "../components/Text";
 import { CircleButton } from "../components/UI";

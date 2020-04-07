@@ -12,7 +12,7 @@ class GameScreen extends Component {
     super(props);
     
     const gameData = this.props.history?.location?.state;
-    const stayedHome = gameData?.stayed || 'no';
+    const stayedHome = gameData?.stayed ?? false;
 
     this.state = {
       stayedHome: stayedHome,
@@ -117,8 +117,8 @@ class GameScreen extends Component {
     return <ShortText color="black" fontWeight="bold" fontSize={[3,4,5]}>{label}</ShortText>
   }
   ShowScore() {
-    const { score, stayedHome } = this.state;
-    const label = `${stayedHome ? 'Protection Score' : 'Infection Score'}: ${stayedHome ? 99 : score}`;
+    const { score } = this.state;
+    const label = `${score}`;
     return <ShortText color="black"fontWeight="bold" fontSize={[3,4,5]}>{label}</ShortText>
   }
 
