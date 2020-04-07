@@ -4,6 +4,7 @@ import { Redirect } from "react-router-dom";
 import { MenuButton, CardButton } from "../components/UI";
 import { Title, BodyText } from "../components/Text";
 import FigureIcon from "../components/icon/figure";
+import { backgroundColor } from "styled-system";
 
 class EndScreen extends Component {
 
@@ -22,8 +23,8 @@ class EndScreen extends Component {
       returnToGame: false,
       stayedHome: stayedHome
     };
-    this.textStayed = ["Your\nProtection Collection", "Because you chose to stay home, {{infected}} people in your community did not catch the shadowpox virus from you.", "{{hospital}} of these would have needed hospital care."];
-    this.textOut = ["Your\nInfection Collection", "Because you chose not to stay home, {{infected}} people in your community caught the shadowpox virus from you.", "{{hospital}} of these needed hospital care."];
+    this.textStayed = ["Because you chose to stay home, {{infected}} people in your community did not catch the shadowpox virus from you.", "{{hospital}} of these would have needed hospital care."];
+    this.textOut = ["Because you chose not to stay home, {{infected}} people in your community caught the shadowpox virus from you.", "{{hospital}} of these needed hospital care."];
 
   }
 
@@ -34,13 +35,13 @@ class EndScreen extends Component {
       <Flex className="App" flexDirection="column" alignItems='center' justifyContent="center" >
         <Flex flexDirection='column' width='fit-content'>
           {this.text()}
-          <Flex mx={4} my={4} justifyContent='space-evenly'>
-            <MenuButton fontSize={[1, 2, 3]} onClick={() => {this.OnReturn()}}>Try Again</MenuButton>
+          <Flex mx={4} my={4} flexDirection='column' alignItems='center' >
             <form encType="application/x-www-form-urlencoded" action="https://shadowpox.org/cards/" method="POST">
               <input hidden name="cards" type="text" size="32" readOnly={true} value={cards} />
               <input hidden name="stayedhome" type="checkbox" readOnly={true} value='yes' checked={stayedHome} />
-              <MenuButton type='submit' fontSize={[1, 2, 3]}>Read their stories </MenuButton>
+              <MenuButton my='2' width={'fit-content'} type='submit' fontSize={[1, 2, 3]}>{`View your ${stayedHome ? 'Protection' : 'Infection'} Collection`}</MenuButton>
             </form>
+            <MenuButton width='fit-content' fontSize={[1, 2, 3]} onClick={() => { this.OnReturn() }}>Try Again</MenuButton>
           </Flex>
         </Flex>
         {this.RedirectToPlay()}
@@ -74,12 +75,10 @@ class EndScreen extends Component {
     const sick = cards?.length;
     const hospital = cards.filter(c => c < 0).length ?? 0;
     const text = stayedHome ? this.textStayed : this.textOut;
-    const title = text?.splice(0, 1)??"";
-    console.log(stayedHome, this.textStayed, this.textOut);
     return (
       <Flex flexDirection="column" alignItems="center" p={3} maxWidth='650px' textAlign='center' flex="1 1 auto" justifyContent='center'>
-        <Title mb={2} fontSize={[4, 5, 6]}>{title}</Title>
-        {text.map((v,id) => {
+
+        {text.map((v, id) => {
           return <BodyText key={id} fontSize={[3, 4, 5]}>{this.stringTemplateParser(v, { infected: sick, hospital: hospital })}</BodyText>
         })}
       </Flex>
