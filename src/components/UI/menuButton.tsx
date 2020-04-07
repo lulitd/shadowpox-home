@@ -11,7 +11,8 @@ const MenuButton = props => {
             m:1,
             color: 'text',
             textAlign:'center',
-            fontWeight:'800',
+            fontWeight:'bolder',
+            fontFamily:'body',
             textTransform:'uppercase',
             '&:hover': {
                 backgroundColor:'text',

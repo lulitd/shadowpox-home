@@ -1,6 +1,6 @@
 const gConfigGeneral = {
     background:0xffffff,
-    gameLength:20,
+    gameLength:60,
     debug:false,
 };
 
@@ -40,7 +40,7 @@ const gConfigTrail ={
     colisionCheck: 30,
     collisonRadius: 16,
     infectionRate: .2,
-    deathRate: 0.3,
+    deathRate: 0.2,
     deathCall:{min:3,max:14}
 };
 

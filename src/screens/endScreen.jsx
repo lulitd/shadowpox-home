@@ -22,7 +22,7 @@ class EndScreen extends Component {
       returnToGame: false,
       stayedHome: stayedHome
     };
-    this.textStayed = ["Your\nProtection Collection", "Because you chose to stay home, {{infected}} people in your community did not catch the shadowpox virus from you.", "{{hospital}} of these would have hospital care."];
+    this.textStayed = ["Your\nProtection Collection", "Because you chose to stay home, {{infected}} people in your community did not catch the shadowpox virus from you.", "{{hospital}} of these would have needed hospital care."];
     this.textOut = ["Your\nInfection Collection", "Because you chose not to stay home, {{infected}} people in your community caught the shadowpox virus from you.", "{{hospital}} of these needed hospital care."];
 
   }

@@ -1,13 +1,20 @@
 import React from "react";
 import ReactDOM from "react-dom";
-import {Switch, Route, HashRouter } from 'react-router-dom';
+import {Switch, Route, MemoryRouter } from 'react-router-dom';
 import {ThemeProvider} from "theme-ui";
 import theme from './theme';
 import {Game,End,MainMenu,Intro} from "./screens"
+import WebFontLoader from "webfontloader";
+
+WebFontLoader.load({
+    google: {
+      families: ["Jura:300,400,500,700,900", "Material Icons"]
+    }
+  });
 
 const MainEntry = () => {
     return (
-        <HashRouter>
+        <MemoryRouter>
         <ThemeProvider theme={theme}>
         <main>
             <Switch>
@@ -18,7 +25,7 @@ const MainEntry = () => {
             </Switch>
         </main>
         </ThemeProvider>
-        </HashRouter>
+        </MemoryRouter>
         );
 }
 ReactDOM.render(<MainEntry />, document.getElementById("root"));
