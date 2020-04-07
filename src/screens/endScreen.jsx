@@ -52,7 +52,7 @@ class EndScreen extends Component {
   RedirectToPlay() {
     const { returnToGame } = this.state;
 
-    return returnToGame ? <Redirect to="/intro" /> : null;
+    return returnToGame ? <Redirect to="/" /> : null;
   }
 
   cardButtons() {
