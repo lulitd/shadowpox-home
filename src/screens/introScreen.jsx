@@ -1,14 +1,17 @@
 import React, { Component } from "react";
 import { Text, Flex } from "rebass";
 import { Redirect } from "react-router-dom";
-import { MenuButton } from "../components/UI";
 import { ShortText } from "../components/Text";
+import { CircleButton } from "../components/UI";
+import OutIcon from "../components/icon/leave_icon";
+import StayIcon from "../components/icon/stay_icon";
 class IntroScreen extends Component {
 
     constructor(props) {
         super(props);
         this.state = {
-            goToGame: false
+            goToGame: false,
+            stay: false,
         };
     }
 
@@ -17,34 +20,48 @@ class IntroScreen extends Component {
             <Flex className="App"
                 flexDirection='column'
                 alignItems='center'
-                height='100%'>
+                height='100%'
+                justifyContent='center'
+                >
+                <Flex flexDirection='column' width='fit-content'>
                 <Flex
                     flexDirection='column'
-                    flex='1 1 auto'
-                    justifyContent='center'
                     alignItems='center'
-                    width='100%' >
-                    <ShortText my={2} fontSize={[2,3,4]}>There’s a new virus in town.</ShortText>
-                    <ShortText  my={2} fontSize={[2,3,4]}>{'It’s highly contagious.\n You might be infected with no symptoms.'}</ShortText>
-                    <ShortText  my={2} fontSize={[2,3,4]}>Will you #StayHomeSaveLives?</ShortText>
-                    <ShortText  my={2} fontSize={[2,3,4]}>{'You choose…\nfor you\nand 99 other people.'} </ShortText>
-                    <ShortText  my={2} fontSize={[2,3,4]}>Let’s play!</ShortText>
+                    mb={4}>
+                    <ShortText m={2} fontSize={[ 3, 4]}>There’s a new virus in town.</ShortText>
+                    <ShortText m={2} fontSize={[3, 4]}>{'Shadowpox is highly contagious.\n1% of those infected will die. '}</ShortText>
+                    <ShortText m={2} fontSize={[ 3, 4]}>Without knowing it, you might be a carrier.</ShortText>
+                    <ShortText m={2} fontSize={[ 3, 4]}>{'Will you #StayHome to save lives?'} </ShortText>
                 </Flex>
-                <Flex pb={3,4,5}>
-                <MenuButton m={2} onClick={() => { this.onClick() }}>Continue</MenuButton>
+                <Flex m={3} justifyContent='space-evenly'>
+                    <Flex
+                        flexDirection='column'>
+                        <CircleButton m={2} onClick={() => { this.onClick(true) }}>
+                            <StayIcon />
+                        </CircleButton>
+                        <ShortText fontWeight='bold'>Stay Home</ShortText>
+                    </Flex>
+                    <Flex
+                        flexDirection='column'>
+                        <CircleButton m={2} onClick={() => { this.onClick(false) }}>
+                            <OutIcon />
+                        </CircleButton>
+                        <ShortText fontWeight='bold'>Go Out</ShortText>
+                    </Flex>
+                </Flex>
                 </Flex>
                 {this.RedirectToGameScreen()}
             </Flex>
         );
     }
 
-    onClick() {
-        this.setState({ goToGame: true });
+    onClick(isStaying) {
+        this.setState({ goToGame: true, stay: isStaying });
     }
 
     RedirectToGameScreen() {
-        const { goToGame } = this.state;
-        return goToGame ? <Redirect to="/game" /> : null;
+        const { goToGame, stay } = this.state;
+        return goToGame ? <Redirect to={{ pathname: "/game", state: { stayed: stay } }} /> : null;
     }
 }
 

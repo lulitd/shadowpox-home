@@ -119,7 +119,8 @@ export default class Character extends Phaser.GameObjects.Sprite {
 
   updatePhysics() {
     const currentState = this.state;
-
+    if (!this.body) return; 
+    
     switch (currentState) {
       case CharacterState.None:
         this.setVelocity(0);
@@ -182,6 +183,7 @@ export default class Character extends Phaser.GameObjects.Sprite {
 
 
   update() {
+    if (!this.scene)return; 
     this.updatePhysics();
     this.animate();
     this.depth = this.y + this.height / 2;

@@ -111,7 +111,19 @@ export default class MainScene extends Scene {
 
     this.physics.world.on('worldbounds', this.onWorldBounds);
 
+      // @ts-ignore
+    if (window.phaserEvents === undefined) {
+        // @ts-ignore
+      window.phaserEvents = new Listener();
+    }
+  // @ts-ignore
+    window.phaserEvents.addListener(
+      GAME_EVENTS.GAME_OVER,
+      () => this.gameOver()
+    );
+
     this.onResize(initWidth, initHeight);
+
 
   }
 
@@ -143,6 +155,7 @@ export default class MainScene extends Scene {
   }
 
   update() {
+    if (!this.game)return; 
     this.FPS.update();
     this.player.update();
 
@@ -236,6 +249,12 @@ export default class MainScene extends Scene {
 
    return Phaser.Utils.Array.Shuffle(infected);
 
+  }
+
+  gameOver(){
+    this.scene.stop("GameScene");
+    this.sys.game.destroy(false);
+    // TODO FIX CLEAN UP
   }
 
 }

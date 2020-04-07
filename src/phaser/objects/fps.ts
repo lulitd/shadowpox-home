@@ -9,6 +9,7 @@
       }
   
       public update() {
+        if (!this.scene)return; 
         this.setText(`fps: ${Math.floor(this.scene.game.loop.actualFps)}`)
       }
   }

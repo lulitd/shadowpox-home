@@ -10,8 +10,12 @@ class GameScreen extends Component {
 
   constructor(props) {
     super(props);
+    
+    const gameData = this.props.history?.location?.state;
+    const stayedHome = gameData?.stayed || 'no';
+
     this.state = {
-      stayedHome: false,
+      stayedHome: stayedHome,
       timeRemaining: gConfigGeneral.gameLength, /// in seconds eg. 90= 1 min 30 secs
       score: 0,
       isPlaying: true,
@@ -120,9 +124,9 @@ class GameScreen extends Component {
 
 
   RedirectToEndScreen() {
-    const { isPlaying, infected } = this.state;
+    const { isPlaying, infected,stayedHome } = this.state;
 
-    return isPlaying ? null : <Redirect to={{ pathname: "/score", state: { cards: infected } }} />;
+    return isPlaying ? null : <Redirect to={{ pathname: "/score", state: { cards: infected, stayedHome:stayedHome} }} />;
   }
 }
 

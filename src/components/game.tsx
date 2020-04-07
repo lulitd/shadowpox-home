@@ -3,7 +3,7 @@ import React,{Component} from "react";
 import preloadScene from "../phaser/scenes/preloadScene";
 import gameScene from "../phaser/scenes/gameScene";
 import {gConfigGeneral} from "../phaser/data/gameConfig";
-
+import { GAME_EVENTS } from "../phaser/data/const";
 const DEFAULT_WIDTH = window.innerWidth;
 const DEFAULT_HEIGHT = window.innerHeight; 
 
@@ -37,6 +37,15 @@ export default class Game extends Component{
           new Phaser.Game(config);
     }
 
+    componentWillUnmount(){
+      //@ts-ignore
+      if (window.phaserEvents) {
+        // @ts-ignore
+        window.phaserEvents.emit(
+          GAME_EVENTS.GAME_OVER,
+        );
+      }
+    }
     shouldComponentUpdate(){
         return false; 
     }

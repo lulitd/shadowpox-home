@@ -49,13 +49,16 @@ export default class PlayerCharacter extends Character {
     this.graphics.clear();
     const current = this.tintTopLeft;
     this.graphics.fillStyle(0xffffff - current, 1);
+    this.graphics.lineStyle(2,current, 1);
     this.graphics.fillCircleShape(this.geomCircle);
+    this.graphics.strokeCircleShape(this.geomCircle);
     this.graphics.setDepth(this.depth - 1);
   }
 
 
 
   update() {
+    if (!this.scene)return; 
     this.updatePhysics();
     this.playerActions();
     this.animate();
