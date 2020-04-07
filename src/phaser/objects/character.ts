@@ -20,6 +20,7 @@ export default class Character extends Phaser.GameObjects.Sprite {
   readonly TEXTURE_HEIGHT: number = 72;
 
 
+
   constructor(scene: Phaser.Scene, x: number, y: number, velMin: number = 50, velMax: number = 100) {
     super(scene, x, y, 'character')
     this.setOrigin(0.5, 0);
@@ -45,6 +46,8 @@ export default class Character extends Phaser.GameObjects.Sprite {
 
     this.setState(CharacterState.Healthy);
     this.body.setMaxVelocity(100, 100);
+
+
 
     this.resizeToFitDisplay(scene.game.scale.width, scene.game.scale.height);
   }

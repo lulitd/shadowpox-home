@@ -13,7 +13,6 @@ export default class Game extends Component{
 
       const configSettings = gConfigGeneral; 
 
-      console.log(configSettings);
         const config:Phaser.Types.Core.GameConfig = {
             type: Phaser.AUTO,
             backgroundColor: configSettings.background??0x000,

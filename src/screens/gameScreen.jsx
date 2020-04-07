@@ -1,10 +1,11 @@
 import React, { Component } from "react";
 import Game from "../components/game"
-import { Text, Box, Flex } from "rebass";
+import { Box, Flex } from "rebass";
 import Listener from "../phaser/Listener";
 import { GAME_EVENTS } from "../phaser/data/const";
 import { gConfigGeneral } from '../phaser/data/gameConfig'
 import { Redirect } from "react-router-dom";
+import { ShortText } from "../components/Text";
 class GameScreen extends Component {
 
   constructor(props) {
@@ -90,8 +91,6 @@ class GameScreen extends Component {
   }
 
   roundFinished(infected) {
-
-    console.log(infected);
     this.setState({
       isPlaying: false,
       infected: infected,
@@ -111,12 +110,12 @@ class GameScreen extends Component {
     let sec = timeRemaining % 60;
     sec = (sec < 10 ? '0' : '') + sec;
     const label = `${min}:${sec}`;
-    return <Text>{label}</Text>
+    return <ShortText color="black" fontWeight="bold" fontSize={[3,4,5]}>{label}</ShortText>
   }
   ShowScore() {
     const { score, stayedHome } = this.state;
     const label = `${stayedHome ? 'Protection Score' : 'Infection Score'}: ${stayedHome ? 99 : score}`;
-    return <Text>{label}</Text>
+    return <ShortText color="black"fontWeight="bold" fontSize={[3,4,5]}>{label}</ShortText>
   }
 
 

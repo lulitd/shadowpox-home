@@ -28,7 +28,7 @@ const gConfigPlayer ={
     isControlled: true,
     respondSpeed: 75,
     respondThres: 20,
-    tint:0x0077ff,
+    tint:0xffffff,
 };
 
 const gConfigTrail ={

@@ -1,11 +1,8 @@
 import React from "react";
 import { Button, Box, Flex } from "rebass"
 import PropTypes from "prop-types";
-import { position, display, overflow, minHeight } from "styled-system";
-import Title from "../components/Title";
+import {Title} from "../Text";
 class Modal extends React.Component {
-
-
     constructor(props) {
         super(props);
     }

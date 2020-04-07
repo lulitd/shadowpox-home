@@ -1,67 +1,71 @@
 import React, { Component } from "react";
-import { Button } from "rebass";
+import { Flex, Text } from "rebass";
 import axios from 'axios';
 import qs from 'qs';
-
+import { MenuButton, CardButton } from "../components/UI";
+import { Title, BodyText } from "../components/Text";
+import FigureIcon from "../components/figure";
 
 class EndScreen extends Component {
 
   constructor(props) {
     super(props);
 
-    const gameData = this.props.history?.location?.state; 
-    const cards = gameData?.cards||[]; 
-    const stayedHome = gameData?.statedHome||'no'; 
-    this.state={
-      cards:cards,
-      stayedHome:stayedHome
+    const gameData = this.props.history?.location?.state;
+    const cards = gameData?.cards || [-1, 3, 5, -2, 4, -1, 3, 5, -2, 4, -1, 3, 5, -2, 4, -1, 3, 5, -2, 4];
+    const stayedHome = gameData?.statedHome || 'no';
+    this.state = {
+      cards: cards,
+      stayedHome: stayedHome
     };
 
   }
   render() {
+    const { cards } = this.state;
+    const deaths = cards.filter(c => c < 0);
+
     return (
-      <div className="App">
-        <form action="https://shadowpox.org/cards/" method="POST">
-          <input name="cards" type="text" size="32" className="inputbox" value={this.state.cards} /><br />
-          <input name="stayedhome" type="checkbox" value={this.state.stayedHome} />
-          <label for="stayedhome">Stayed home</label><br />
-          <input name="Send" type="submit" />
-        </form>
-        {/* <Button onClick={this.handleSubmit}>Click to view cards</Button> */}
-      </div>
+      <Flex className="App" flexDirection="column" alignItems='center' >
+        <Flex flexDirection="column" alignItems="center" p={3} maxWidth='650px' textAlign='center'>
+          <Title mb={2} fontSize={[4, 5,6]}>{`Infection Score:\n${cards.length}`}</Title>
+          <BodyText fontSize={[3,4, 5]}>Because you chose not to stay home, these {cards.length} people in your community caught the virus from you.</BodyText>
+          <BodyText fontSize={[3,4, 5]}>{deaths.length} of these have died from the disease.</BodyText>
+          <MenuButton mt={4} onClick={this.handleSubmit()}>Click to learn their stories </MenuButton>
+        </Flex>
+        <Flex p={3} flexWrap='wrap' justifyContent='center' maxWidth='650px'>
+          {this.cardButtons()}
+        </Flex>
+      </Flex>
+    );
+  }
+
+  cardButtons() {
+    const { cards } = this.state;
+
+    return (
+      cards.map(card => {
+
+        return <CardButton key={`card_${card}`}bg={card > 0 ? 'white' : 'grey'} onClick={this.handleSubmit()}><span><FigureIcon/></span></CardButton>
+      })
     );
   }
 
   handleSubmit() {
-    const data = { cards: '-12,3,4,5', stayedhome: 'yes' };
+    const data = this.state;
     const url = 'https://shadowpox.org/cards/';
 
-    // const options = {
-    //   method: 'POST',
-    //   headers: {'Access-Control-Allow-Origin': '*' },
-    //   data: qs.stringify(data),
-    //   url,
-    // };
+    const options = {
+      method: 'POST',
+      headers: { 'Access-Control-Allow-Origin': '*' },
+      data: qs.stringify(data),
+      url,
+    };
 
-    // axios(options).then(function (response) {
-    //   console.log('response is : ' + response.data);
-    // }).catch(function (error) {
-    //   console.log(error);
-    // });
-    var xhr = new XMLHttpRequest();
-    xhr.addEventListener('load', () => {
-      // update the state of the component with the result here
-      console.log(xhr.responseText)
-    })
-
-    xhr.addEventListener('error', () => {
-      console.log(xhr.responseText)
-    })
-
-    xhr.open('POST', url)
-    // send the request
-    xhr.send(JSON.stringify(data));
-
+    axios(options).then(function (response) {
+      console.log('response is : ' + response.data);
+    }).catch(function (error) {
+      console.log(error);
+    });
 
   }
 }

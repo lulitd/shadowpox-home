@@ -51,7 +51,7 @@ export default class MainScene extends Scene {
 
     // Trail setup
     this.trailManager = this.add.particles('particle');
-    this.trailManager.setDepth(0);
+    this.trailManager.setDepth(-1000);
 
     this.trail = this.trailManager.createEmitter(
       Phaser.Utils.Objects.Merge({ tint: gConfigTrail.tint },
