@@ -47,28 +47,30 @@ class GameScreen extends Component {
 
   componentWillUnmount() {
     if (window.phaserEvents) {
-      window.phaserEvents.removeListener(
-        GAME_EVENTS.ON_INFECTED,
-        score => this.setScore(score)
-      );
+      // window.phaserEvents.removeListener(
+      //   GAME_EVENTS.ON_INFECTED,
+      //   score => this.setScore(score)
+      // );
 
-      window.phaserEvents.removeListener(
-        GAME_EVENTS.ON_ROUND_END,
-        () => this.roundFinished()
-      );
+      // window.phaserEvents.removeListener(
+      //   GAME_EVENTS.ON_ROUND_END,
+      //   () => this.roundFinished()
+      // );
 
-      window.phaserEvents.removeListener(
-        GAME_EVENTS.ON_TIMER,
-        time => this.setTime(time)
-      );
+      // window.phaserEvents.removeListener(
+      //   GAME_EVENTS.ON_TIMER,
+      //   time => this.setTime(time)
+      // );
+      window.phaserEvents.removeAllListeners();
     }
   }
 
   render() {
+    const {stayedHome}= this.state; 
     return (
       <Flex className="App" flexDirection='column' alignItems='center' sx={{ height: '100%' }}>
         <Box sx={{ position: "absolute", top: 0, bottom: 0, left: 0, right: 0 }}>
-          <Game />
+          <Game stayed={stayedHome}/>
         </Box>
 
         <Flex

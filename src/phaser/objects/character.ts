@@ -1,4 +1,4 @@
-import { gConfigTrail } from '../data/gameConfig'
+import { gConfigTrail,gConfigPlayer} from '../data/gameConfig'
 
 export enum CharacterState {
   None,
@@ -12,10 +12,11 @@ export enum CharacterState {
 export default class Character extends Phaser.GameObjects.Sprite {
   body: Phaser.Physics.Arcade.Body;
   state: CharacterState;
-  lastEnounter: number=0;
-  particleManager: Phaser.GameObjects.Particles.ParticleEmitterManager;
+  lastEnounter: number = 0;
   unscaleVelocity: Phaser.Math.Vector2;
   cId: number;
+  graphics: Phaser.GameObjects.Graphics;
+  geomCircle: Phaser.Geom.Circle;
   readonly TEXTURE_WIDTH: number = 42;
   readonly TEXTURE_HEIGHT: number = 72;
 
@@ -28,8 +29,9 @@ export default class Character extends Phaser.GameObjects.Sprite {
     scene.add.existing(this)
 
     this.body = new Phaser.Physics.Arcade.Body(scene.physics.world, this);
-    this.body.onWorldBounds = true;
+
     this.body.setCollideWorldBounds(true, 1, 1);
+    this.body.onWorldBounds = true;
 
     this.unscaleVelocity = new Phaser.Math.Vector2(1, 1);
     this.body.setVelocity(this.unscaleVelocity.x, this.unscaleVelocity.y);
@@ -47,9 +49,12 @@ export default class Character extends Phaser.GameObjects.Sprite {
     this.setState(CharacterState.Healthy);
     this.body.setMaxVelocity(100, 100);
 
-
+    this.geomCircle = new Phaser.Geom.Circle(x, y, this.height * 0.5 * this.scaleY);
+    this.graphics = scene.add.graphics();
+    this.graphics.fillStyle(0x000000, 1);
 
     this.resizeToFitDisplay(scene.game.scale.width, scene.game.scale.height);
+    this.body.setMaxSpeed(100);
   }
 
   setID(id: number) {
@@ -74,7 +79,18 @@ export default class Character extends Phaser.GameObjects.Sprite {
     this.setScale(Math.min(newScale, 1));
 
     this.setVelocity();
+  }
 
+  drawCircle() {
+    this.geomCircle.radius = this.TEXTURE_HEIGHT * 0.6 * this.scaleY;
+    this.geomCircle.setPosition(this.x, this.y + (this.scaleY * this.height * 0.5));
+    this.graphics.clear();
+    const current = this.tintTopLeft;
+    this.graphics.fillStyle(0xffffff-current, 1);
+    this.graphics.lineStyle(2, current, 1);
+    this.graphics.fillCircleShape(this.geomCircle);
+    this.graphics.strokeCircleShape(this.geomCircle);
+    this.graphics.setDepth(this.depth - 1);
 
   }
   setVelocity(x?: number, y?: number) {
@@ -106,8 +122,9 @@ export default class Character extends Phaser.GameObjects.Sprite {
         this.setTint(0xffffff);
         break;
       case CharacterState.Dead:
-        this.setTexture('character','dead-figure.png');
-        this.setTint(0x000000);
+        this.setTexture('character', 'dead-figure.png');
+        this.setTint(0xffffff);
+        this.drawCircle();
         break;
 
       default:
@@ -119,8 +136,8 @@ export default class Character extends Phaser.GameObjects.Sprite {
 
   updatePhysics() {
     const currentState = this.state;
-    if (!this.body) return; 
-    
+    if (!this.body) return;
+
     switch (currentState) {
       case CharacterState.None:
         this.setVelocity(0);
@@ -147,43 +164,46 @@ export default class Character extends Phaser.GameObjects.Sprite {
     }
   }
 
-  getInfected(){
+  getInfected(how?:string) {
 
     const precent = Math.random();
-    const currentTime = this.scene.game.getTime()/1000; 
+    const currentTime = this.scene.game.getTime() / 1000;
+
+    const val = how=='contact'?gConfigPlayer.infectionRate:gConfigTrail.infectionRate;
+  
     // adding a buffer between checks
-    if (currentTime-this.lastEnounter>0.2){
-      if (precent <= gConfigTrail.infectionRate) {
+    if (currentTime - this.lastEnounter > 0.2) {
+      if (precent <= val) {
         let vel = this.unscaleVelocity;
-        vel.x = vel.x*0.5;
-        vel.y =vel.y*0.5;
+        vel.x = vel.x * 0.5;
+        vel.y = vel.y * 0.5;
         this.setVelocity(vel.x, vel.y);
         this.setState(CharacterState.Sick);
         this.emit('gotSick');
 
-        const rate = Phaser.Math.Between(gConfigTrail.deathCall.min??3,gConfigTrail.deathCall.max??14);
+        const rate = Phaser.Math.Between(gConfigTrail.deathCall.min ?? 3, gConfigTrail.deathCall.max ?? 14);
         this.scene.time.addEvent({
-          delay: 1000*rate,
+          delay: 1000 * rate,
           callback: this.died,
           callbackScope: this,
           loop: false
         });
       }
     }
-    this.lastEnounter= this.scene.game.getTime()/1000;
+    this.lastEnounter = this.scene.game.getTime() / 1000;
   }
 
-  died(){
+  died() {
     const precent = Math.random();
-    if (precent <=gConfigTrail.deathRate) {
-      this.setID(this.cId*-1);
+    if (precent <= gConfigTrail.deathRate) {
+      this.setID(this.cId * -1);
       this.setState(CharacterState.Dead);
     }
   }
 
 
   update() {
-    if (!this.scene)return; 
+    if (!this.scene) return;
     this.updatePhysics();
     this.animate();
     this.depth = this.y + this.height / 2;

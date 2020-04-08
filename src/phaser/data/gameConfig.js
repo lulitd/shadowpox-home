@@ -1,6 +1,7 @@
 const gConfigGeneral = {
     background:0xffffff,
-    gameLength:60,
+    gameLength:45,
+    gameStartDelay:-5000,
     debug:false,
 };
 
@@ -29,19 +30,20 @@ const gConfigPlayer ={
     respondSpeed: 75,
     respondThres: 20,
     tint:0xffffff,
+    infectionRate:0.8,
 };
 
 const gConfigTrail ={
     tint:0x000000,
     startingScale: 0.6,
-    lifespan: 0.25,
-    frequency: 500,
+    lifespan: 0.125,
+    frequency: 450,
     limit: 100,
     colisionCheck: 30,
     collisonRadius: 16,
-    infectionRate: .2,
+    infectionRate: 0.2,
     deathRate: 0.2,
-    deathCall:{min:3,max:14}
+    deathCall:{min:3,max:7}
 };
 
 export { gConfigGeneral, gConfigNeighbourhood, gNeighbour, debugColors, gConfigPlayer, gConfigTrail };
