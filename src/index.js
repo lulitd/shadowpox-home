@@ -1,6 +1,6 @@
 import React from "react";
 import ReactDOM from "react-dom";
-import {Switch, Route, MemoryRouter, HashRouter } from 'react-router-dom';
+import {Switch, Route,MemoryRouter } from 'react-router-dom';
 import {ThemeProvider} from "theme-ui";
 import theme from './theme';
 import {Game,End,Intro} from "./screens"

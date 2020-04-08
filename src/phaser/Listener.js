@@ -24,6 +24,10 @@ export default class Listener{
         }
         return false;
     }
+
+    removeAllListeners(){
+        this.listeners.clear();
+    }
     emit(label, ...args){
         let listeners = this.listeners.get(label);
 

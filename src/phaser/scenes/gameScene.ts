@@ -6,19 +6,23 @@ import { gConfigGeneral, gConfigNeighbourhood, gNeighbour, debugColors, gConfigP
 import Listener from "../Listener";
 import { GAME_EVENTS } from "../data/const";
 
+
 export default class MainScene extends Scene {
   player: PlayerCharacter;
-  neighbours: GameObjects.Group;
+  neighbours: Phaser.Physics.Arcade.Group;
+  home: Phaser.Physics.Arcade.Sprite;
   FPS: FPS;
   trailManager: GameObjects.Particles.ParticleEmitterManager;
   trail: GameObjects.Particles.ParticleEmitter;
   public static readonly neighbourLimit = 99;
   gameLength: number = 1000 * 60;
-  timeRemaining;
+  timeRemaining: number = 60;
   InnerBounds: Geom.Rectangle;
   OuterBounds: Geom.Rectangle;
   DebugMode: boolean = false;
   score: number = 0;
+  playerStayed = false;
+  playerCurrentHome = false; 
 
   constructor() {
     super({ key: 'GameScene' });
@@ -30,6 +34,7 @@ export default class MainScene extends Scene {
       window.phaserEvents = new Listener();
     }
 
+
   }
 
   create() {
@@ -37,18 +42,30 @@ export default class MainScene extends Scene {
     const initWidth = window.innerWidth;
     const initHeight = window.innerHeight;
     const playerSettings = gConfigPlayer;
+    //@ts-ignore
+    this.playerStayed = this.game.propsFromReact.stayed;
+
+
 
     this.cameras.main.setBounds(0, 0, this.game.scale.width, this.game.scale.height);
 
     //PLAYER SETUP
     this.player = new PlayerCharacter(this, initWidth * playerSettings.spawnLocation.x, initHeight * playerSettings.spawnLocation.y);
+    this.player.isHome = this.playerStayed;
 
     if (this.DebugMode) {
       this.player.setTint(debugColors.player ?? 0x00ff00);
     }
-    
-    this.player.isControlled(playerSettings.isControlled ?? true);
+    this.home = this.physics.add.sprite(initWidth * playerSettings.spawnLocation.x, initHeight * playerSettings.spawnLocation.y, this.playerStayed ? "stay_home" : "out_home");
 
+    this.home.setTint(0x000000);
+    this.home.setCircle(200,-100,-100);
+    this.home.setScale(0.5, 0.5);
+    this.home.setImmovable(true);
+    this.home.setBounce(0);
+   //
+
+    this.player.isControlled(playerSettings.isControlled ?? true);
     // Trail setup
     this.trailManager = this.add.particles('particle');
     this.trailManager.setDepth(-1000);
@@ -65,7 +82,7 @@ export default class MainScene extends Scene {
     ).reserve(gConfigTrail.limit ?? 100).startFollow(this.player, 0, this.player.height * this.player.scaleY * 0.75);
 
     // Neighbours setup
-    this.neighbours = this.add.group({
+    this.neighbours = this.physics.add.group({
       maxSize: MainScene.neighbourLimit
     });
     this.InnerBounds = new Geom.Rectangle(0, 0, this.game.scale.width, this.game.scale.height);
@@ -86,6 +103,7 @@ export default class MainScene extends Scene {
         neighbour.setID(this.neighbours.getLength());
 
         neighbour.addListener('gotSick', this.addScore, this);
+        neighbour.body.setCollideWorldBounds(true,1,1);
       },
       delay: this.gameLength * inverseNeighbours * (gConfigNeighbourhood.spawnedPrecent ?? 0.75),
     });
@@ -111,12 +129,12 @@ export default class MainScene extends Scene {
 
     this.physics.world.on('worldbounds', this.onWorldBounds);
 
-      // @ts-ignore
+    // @ts-ignore
     if (window.phaserEvents === undefined) {
-        // @ts-ignore
+      // @ts-ignore
       window.phaserEvents = new Listener();
     }
-  // @ts-ignore
+    // @ts-ignore
     window.phaserEvents.addListener(
       GAME_EVENTS.GAME_OVER,
       () => this.gameOver()
@@ -124,8 +142,9 @@ export default class MainScene extends Scene {
 
     this.onResize(initWidth, initHeight);
 
-
   }
+
+
 
   onResize = (width: number, height: number) => {
     this.cameras.resize(width, height);
@@ -138,11 +157,17 @@ export default class MainScene extends Scene {
       neighbour.resizeToFitDisplay(width, height, prevBounds.width, prevBounds.height, gNeighbour.relScale);
     }, this);
     ;
+    
+    this.home.body.reset(width*gConfigPlayer.spawnLocation.x,height*gConfigPlayer.spawnLocation.y);
+   // this.home.setScale(0.75 *this.player.scaleX, 0.75*this.player.scaleY);
+   this.home.setScale(0.75*this.player.scale); 
+
 
     this.physics.world.setBounds(0, 0, width, height);
     this.physics.world.resume();
 
     this.trail.startFollow(this.player, 0, this.player.height * this.player.scaleY * 0.75);
+
 
   }
 
@@ -155,13 +180,13 @@ export default class MainScene extends Scene {
   }
 
   update() {
-    if (!this.game)return; 
+    if (!this.game) return;
+this.playerCurrentHome=false; 
     this.FPS.update();
     this.player.update();
 
     this.FPS.setVisible(this.DebugMode);
     this.player.setTint(this.DebugMode ? debugColors.player : gConfigPlayer.tint);
-
 
     if (this.game.getFrame() % gConfigTrail.colisionCheck) {
       this.trail.forEachAlive(this.virusCheck, this);
@@ -169,6 +194,43 @@ export default class MainScene extends Scene {
     Actions.Call(this.neighbours.getChildren(), (neighbour: Character) => {
       neighbour.update();
     }, this);
+
+    this.physics.world.collide(this.home, this.neighbours,this.neighbourHouseCollision);
+
+    this.physics.world.overlap(this.player, this.neighbours,this.playerCollides,this.checkIfNeighbourSick);
+  }
+  playerCollides(player,neighbour){
+    if (neighbour instanceof Character && !(neighbour instanceof PlayerCharacter) ) {
+      neighbour.getInfected('contact');
+    }
+  }
+  checkIfNeighbourSick(player,neighbour){
+    if (neighbour instanceof Character && !(neighbour instanceof PlayerCharacter) ) {
+      return neighbour.state===CharacterState.Healthy;
+    }
+    return false; 
+  }
+  neighbourHouseCollision(home, obj2) {
+
+      if (obj2 instanceof Character && !(obj2 instanceof PlayerCharacter) ) {
+  
+        let newXVelocity = Math.abs(obj2.body.velocity.x) + 25;
+        let newYVelocity = Math.abs(obj2.body.velocity.y) + 25;
+        if(home instanceof Phaser.Physics.Arcade.Sprite){
+            if (obj2.x < home.body.left) {
+              obj2.body.setVelocityX(-newXVelocity);
+            } else {
+              obj2.body.setVelocityX(newXVelocity);
+            }
+
+            if (obj2.y < home.body.top) {
+              obj2.body.setVelocityY(-newYVelocity);
+            } else {
+              obj2.body.setVelocityY(newYVelocity);
+            }
+        }
+
+      }
   }
 
   toggleDebug() {
@@ -188,7 +250,7 @@ export default class MainScene extends Scene {
         if (gameObject.state != CharacterState.Healthy) return;
         let char = gameObject as Character;
 
-        char.getInfected();
+        char.getInfected('trail');
 
       }
     });
@@ -247,11 +309,11 @@ export default class MainScene extends Scene {
         infected.push(neighbour.cId);
     }, this);
 
-   return Phaser.Utils.Array.Shuffle(infected);
+    return Phaser.Utils.Array.Shuffle(infected);
 
   }
 
-  gameOver(){
+  gameOver() {
     this.scene.stop("GameScene");
     this.sys.game.destroy(false);
     // TODO FIX CLEAN UP

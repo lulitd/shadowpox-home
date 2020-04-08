@@ -29,7 +29,7 @@ class IntroScreen extends Component {
                     alignItems='center'
                     mb={4}>
                     <ShortText m={2} fontSize={[ 3, 4]}>There’s a new virus in town.</ShortText>
-                    <ShortText m={2} fontSize={[3, 4]}>{'Shadowpox is highly contagious.\n1% of those infected will die. '}</ShortText>
+                    <ShortText m={2} fontSize={[3, 4]}>{'Shadowpox is highly contagious.\n1 in 5 of those infected will become very sick.\nSome will die. '}</ShortText>
                     <ShortText m={2} fontSize={[ 3, 4]}>Without knowing it, you might be a carrier.</ShortText>
                     <ShortText m={2} fontSize={[ 3, 4]}>{'Will you #StayHome to save lives?'} </ShortText>
                 </Flex>

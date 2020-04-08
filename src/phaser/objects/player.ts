@@ -5,8 +5,8 @@ export default class PlayerCharacter extends Character {
   respondToPlayer: boolean;
   respondThres: number = 20;
   respondSpeed: number = 75;
-  graphics: Phaser.GameObjects.Graphics;
-  geomCircle: Phaser.Geom.Circle;
+  isHome:boolean; 
+  alphaTweener:Phaser.Tweens.Tween;
 
   constructor(scene: Phaser.Scene, x: number, y: number) {
     super(scene, x, y);
@@ -17,6 +17,15 @@ export default class PlayerCharacter extends Character {
     this.graphics = scene.add.graphics();
     this.graphics.fillStyle(0x000000, 1);
     this.graphics.fillCircleShape(this.geomCircle);
+
+    this.alphaTweener = this.scene.tweens.addCounter({
+      from: 0.4,
+      to:0.8,
+      duration:1000,
+      yoyo:true,
+      repeat:-1,
+      ease: 'Sine.easeInOut'
+    });
   }
 
 
@@ -48,11 +57,12 @@ export default class PlayerCharacter extends Character {
     this.geomCircle.setPosition(this.x, this.y + (this.scaleY * this.height * 0.5));
     this.graphics.clear();
     const current = this.tintTopLeft;
-    this.graphics.fillStyle(0xffffff - current, 1);
+    this.graphics.fillStyle(0xffffff - current,this.isHome?this.alphaTweener.getValue():1);
     this.graphics.lineStyle(2,current, 1);
     this.graphics.fillCircleShape(this.geomCircle);
     this.graphics.strokeCircleShape(this.geomCircle);
     this.graphics.setDepth(this.depth - 1);
+
   }
 
 

@@ -5,6 +5,10 @@ export default class PreloadScene extends Phaser.Scene {
   
     preload() {
       this.load.image('particle','assets/img/solid-circle-particle.png');
+      this.load.image('stay_home','assets/img/stay-home-house.png');
+      this.load.image('out_home','assets/img/go-out-house.png');
+   
+     
       this.load.atlas('character','assets/sheet/animation.png', 'assets/sheet/animation.json');
     }
   

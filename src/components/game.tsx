@@ -7,11 +7,17 @@ import { GAME_EVENTS } from "../phaser/data/const";
 const DEFAULT_WIDTH = window.innerWidth;
 const DEFAULT_HEIGHT = window.innerHeight; 
 
-export default class Game extends Component{
+
+type GameProp = {
+  stayed: boolean,
+}
+
+export default class Game extends Component<GameProp,{}>{
 
     componentDidMount(){
 
       const configSettings = gConfigGeneral; 
+
 
         const config:Phaser.Types.Core.GameConfig = {
             type: Phaser.AUTO,
@@ -29,12 +35,20 @@ export default class Game extends Component{
                 default: 'arcade',
                 arcade: {
                   debug: configSettings.debug??false,
+                
                 }
             },
             scene: [preloadScene,gameScene]
           };
       
-          new Phaser.Game(config);
+         const game = new Phaser.Game(config);
+
+        // console.log(this.props);
+
+         const {stayed:playerChoice} = this.props;
+          //@ts-ignore
+          game.propsFromReact={stayed:playerChoice};
+
     }
 
     componentWillUnmount(){
