@@ -10,6 +10,8 @@ export default class PreloadScene extends Phaser.Scene {
    
      
       this.load.atlas('character','assets/sheet/animation.png', 'assets/sheet/animation.json');
+       
+      this.load.atlas('home_char','assets/sheet/wave.png', 'assets/sheet/wave.json');
     }
   
     create() {
@@ -23,6 +25,11 @@ export default class PreloadScene extends Phaser.Scene {
       start: 0, end: 47, zeroPad:1,
       prefix: 'sick_', suffix: '.png'
   }), repeat: -1 ,frameRate:24});
+
+  this.anims.create({ key: 'wave', frames: this.anims.generateFrameNames('home_char',{ 
+    start: 0, end: 374, zeroPad:3,
+    prefix: 'wave', suffix: '.png'
+}), repeat: -1 ,frameRate:24});
   
       this.scene.start('GameScene');
       

@@ -1,6 +1,7 @@
 const gConfigGeneral = {
     background:0xffffff,
     gameLength:45,
+    gameStartDelay:-5000,
     debug:false,
 };
 

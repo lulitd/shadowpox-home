@@ -11,6 +11,7 @@ export default class MainScene extends Scene {
   player: PlayerCharacter;
   neighbours: Phaser.Physics.Arcade.Group;
   home: Phaser.Physics.Arcade.Sprite;
+  home_char: GameObjects.Sprite;
   FPS: FPS;
   trailManager: GameObjects.Particles.ParticleEmitterManager;
   trail: GameObjects.Particles.ParticleEmitter;
@@ -22,7 +23,7 @@ export default class MainScene extends Scene {
   DebugMode: boolean = false;
   score: number = 0;
   playerStayed = false;
-  playerCurrentHome = false; 
+  playerCurrentHome = false;
 
   constructor() {
     super({ key: 'GameScene' });
@@ -59,11 +60,19 @@ export default class MainScene extends Scene {
     this.home = this.physics.add.sprite(initWidth * playerSettings.spawnLocation.x, initHeight * playerSettings.spawnLocation.y, this.playerStayed ? "stay_home" : "out_home");
 
     this.home.setTint(0x000000);
-    this.home.setCircle(200,-100,-100);
+    this.home.setCircle(200, -100, -100);
     this.home.setScale(0.5, 0.5);
     this.home.setImmovable(true);
     this.home.setBounce(0);
-   //
+
+    this.home_char = this.add.sprite(initWidth * playerSettings.spawnLocation.x, initHeight * playerSettings.spawnLocation.y, 'home_char');
+
+
+    this.home_char.play("wave", true, Math.floor(Math.random() * 30));
+    this.home_char.setTint(0x000000);
+    this.home_char.setScale(0.4, 0.4);
+    this.home_char.visible= this.playerStayed;
+    //
 
     this.player.isControlled(playerSettings.isControlled ?? true);
     // Trail setup
@@ -103,9 +112,10 @@ export default class MainScene extends Scene {
         neighbour.setID(this.neighbours.getLength());
 
         neighbour.addListener('gotSick', this.addScore, this);
-        neighbour.body.setCollideWorldBounds(true,1,1);
+        neighbour.body.setCollideWorldBounds(true, 1, 1);
       },
       delay: this.gameLength * inverseNeighbours * (gConfigNeighbourhood.spawnedPrecent ?? 0.75),
+      startAt: gConfigGeneral.gameStartDelay??3,
     });
 
 
@@ -115,7 +125,8 @@ export default class MainScene extends Scene {
       delay: 1000,
       callback: this.onCountdown,
       callbackScope: this,
-      loop: true
+      loop: true,
+      startAt: gConfigGeneral.gameStartDelay??3
     });
 
     // SETUP EVENT LISTENERS
@@ -157,11 +168,14 @@ export default class MainScene extends Scene {
       neighbour.resizeToFitDisplay(width, height, prevBounds.width, prevBounds.height, gNeighbour.relScale);
     }, this);
     ;
-    
-    this.home.body.reset(width*gConfigPlayer.spawnLocation.x,height*gConfigPlayer.spawnLocation.y);
-   // this.home.setScale(0.75 *this.player.scaleX, 0.75*this.player.scaleY);
-   this.home.setScale(0.75*this.player.scale); 
 
+    this.home.body.reset(width * gConfigPlayer.spawnLocation.x, height * gConfigPlayer.spawnLocation.y);
+    // this.home.setScale(0.75 *this.player.scaleX, 0.75*this.player.scaleY);
+    this.home.setScale(0.75 * this.player.scale);
+
+    this.home_char.setPosition(width * gConfigPlayer.spawnLocation.x, height * gConfigPlayer.spawnLocation.y);
+    this.home_char.setTint(0x000000);
+    this.home_char.setScale(0.8 * this.player.scale);
 
     this.physics.world.setBounds(0, 0, width, height);
     this.physics.world.resume();
@@ -181,7 +195,7 @@ export default class MainScene extends Scene {
 
   update() {
     if (!this.game) return;
-this.playerCurrentHome=false; 
+    this.playerCurrentHome = false;
     this.FPS.update();
     this.player.update();
 
@@ -195,42 +209,42 @@ this.playerCurrentHome=false;
       neighbour.update();
     }, this);
 
-    this.physics.world.collide(this.home, this.neighbours,this.neighbourHouseCollision);
+    this.physics.world.collide(this.home, this.neighbours, this.neighbourHouseCollision);
 
-    this.physics.world.overlap(this.player, this.neighbours,this.playerCollides,this.checkIfNeighbourSick);
+    this.physics.world.overlap(this.player, this.neighbours, this.playerCollides, this.checkIfNeighbourSick);
   }
-  playerCollides(player,neighbour){
-    if (neighbour instanceof Character && !(neighbour instanceof PlayerCharacter) ) {
+  playerCollides(player, neighbour) {
+    if (neighbour instanceof Character && !(neighbour instanceof PlayerCharacter)) {
       neighbour.getInfected('contact');
     }
   }
-  checkIfNeighbourSick(player,neighbour){
-    if (neighbour instanceof Character && !(neighbour instanceof PlayerCharacter) ) {
-      return neighbour.state===CharacterState.Healthy;
+  checkIfNeighbourSick(player, neighbour) {
+    if (neighbour instanceof Character && !(neighbour instanceof PlayerCharacter)) {
+      return neighbour.state === CharacterState.Healthy;
     }
-    return false; 
+    return false;
   }
   neighbourHouseCollision(home, obj2) {
 
-      if (obj2 instanceof Character && !(obj2 instanceof PlayerCharacter) ) {
-  
-        let newXVelocity = Math.abs(obj2.body.velocity.x) + 25;
-        let newYVelocity = Math.abs(obj2.body.velocity.y) + 25;
-        if(home instanceof Phaser.Physics.Arcade.Sprite){
-            if (obj2.x < home.body.left) {
-              obj2.body.setVelocityX(-newXVelocity);
-            } else {
-              obj2.body.setVelocityX(newXVelocity);
-            }
+    if (obj2 instanceof Character && !(obj2 instanceof PlayerCharacter)) {
 
-            if (obj2.y < home.body.top) {
-              obj2.body.setVelocityY(-newYVelocity);
-            } else {
-              obj2.body.setVelocityY(newYVelocity);
-            }
+      let newXVelocity = Math.abs(obj2.body.velocity.x) + 25;
+      let newYVelocity = Math.abs(obj2.body.velocity.y) + 25;
+      if (home instanceof Phaser.Physics.Arcade.Sprite) {
+        if (obj2.x < home.body.left) {
+          obj2.body.setVelocityX(-newXVelocity);
+        } else {
+          obj2.body.setVelocityX(newXVelocity);
         }
 
+        if (obj2.y < home.body.top) {
+          obj2.body.setVelocityY(-newYVelocity);
+        } else {
+          obj2.body.setVelocityY(newYVelocity);
+        }
       }
+
+    }
   }
 
   toggleDebug() {
