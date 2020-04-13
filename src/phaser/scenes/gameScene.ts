@@ -11,7 +11,7 @@ export default class MainScene extends Scene {
   player: PlayerCharacter;
   neighbours: Phaser.Physics.Arcade.Group;
   home: Phaser.Physics.Arcade.Sprite;
-  home_char: GameObjects.Sprite;
+  // home_char: GameObjects.Sprite;
   FPS: FPS;
   trailManager: GameObjects.Particles.ParticleEmitterManager;
   trail: GameObjects.Particles.ParticleEmitter;
@@ -65,14 +65,14 @@ export default class MainScene extends Scene {
     this.home.setImmovable(true);
     this.home.setBounce(0);
 
-    this.home_char = this.add.sprite(initWidth * playerSettings.spawnLocation.x, initHeight * playerSettings.spawnLocation.y, 'home_char');
+    // this.home_char = this.add.sprite(initWidth * playerSettings.spawnLocation.x, initHeight * playerSettings.spawnLocation.y, 'home_char');
 
 
-    this.home_char.play("wave", true, Math.floor(Math.random() * 30));
-    this.home_char.setTint(0x000000);
-    this.home_char.setOrigin(0.5,0.25);
-    this.home_char.setScale(0.5, 0.5);
-    this.home_char.visible= this.playerStayed;
+    // this.home_char.play("wave", true, Math.floor(Math.random() * 30));
+    // this.home_char.setTint(0x000000);
+    // this.home_char.setOrigin(0.5,0.25);
+    // this.home_char.setScale(0.5, 0.5);
+    // this.home_char.visible= this.playerStayed;
     //
 
     this.player.isControlled(playerSettings.isControlled ?? true);
@@ -174,9 +174,9 @@ export default class MainScene extends Scene {
     // this.home.setScale(0.75 *this.player.scaleX, 0.75*this.player.scaleY);
     this.home.setScale(0.75 * this.player.scale);
 
-    this.home_char.setPosition(width * gConfigPlayer.spawnLocation.x, height * gConfigPlayer.spawnLocation.y);
-    this.home_char.setTint(0x000000);
-    this.home_char.setScale(0.8 * this.player.scale);
+    // this.home_char.setPosition(width * gConfigPlayer.spawnLocation.x, height * gConfigPlayer.spawnLocation.y);
+    // this.home_char.setTint(0x000000);
+    // this.home_char.setScale(0.8 * this.player.scale);
 
     this.physics.world.setBounds(0, 0, width, height);
     this.physics.world.resume();
