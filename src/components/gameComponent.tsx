@@ -12,7 +12,7 @@ type GameProp = {
   stayed: boolean,
 }
 
-export default class Game extends Component<GameProp,{}>{
+export default class GameComponent extends Component<GameProp,{}>{
 
     componentDidMount(){
 

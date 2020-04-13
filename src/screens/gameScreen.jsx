@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import Game from "../components/game"
+import GameComponent from "../components/gameComponent"
 import { Box, Flex } from "rebass";
 import Listener from "../phaser/Listener";
 import { GAME_EVENTS } from "../phaser/data/const";
@@ -71,7 +71,7 @@ class GameScreen extends Component {
     return (
       <Flex className="App" flexDirection='column' alignItems='center' sx={{ height: '100%' }}>
         <Box sx={{ position: "absolute", top: 0, bottom: 0, left: 0, right: 0 }}>
-          <Game stayed={stayedHome}/>
+          <GameComponent stayed={stayedHome}/>
         </Box>
 
         <Flex
