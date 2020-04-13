@@ -6,6 +6,7 @@ import { GAME_EVENTS } from "../phaser/data/const";
 import { gConfigGeneral } from '../phaser/data/gameConfig'
 import { Redirect } from "react-router-dom";
 import { ShortText } from "../components/Text";
+import { backgroundColor } from "styled-system";
 class GameScreen extends Component {
 
   constructor(props) {
@@ -116,7 +117,7 @@ class GameScreen extends Component {
     let sec = timeRemaining % 60;
     sec = (sec < 10 ? '0' : '') + sec;
     const label = `${min}:${sec}`;
-    return <ShortText color="black" fontWeight="bold" fontSize={[3,4,5]}>{label}</ShortText>
+    return <ShortText color="black"fontWeight="bold" fontSize={[3,4,5]}>{label}</ShortText>
   }
   ShowScore() {
     const { score } = this.state;

@@ -38,7 +38,7 @@ module.exports = {
         }
     },
     plugins: [
-        new HtmlWebpackPlugin({ gameName: 'Shadowpox:Stay Home', template: 'src/index.html' }),
+        new HtmlWebpackPlugin({ gameName: 'Shadowpox: #StayHome Edition', template: 'src/index.html' }),
         new CopyWebpackPlugin([
             { from: 'src/assets', to: 'assets' },
             //   { from: 'pwa', to: '' },
