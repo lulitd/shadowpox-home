@@ -57,7 +57,7 @@ export default class MainScene extends Scene {
     if (this.DebugMode) {
       this.player.setTint(debugColors.player ?? 0x00ff00);
     }
-    this.home = this.physics.add.sprite(initWidth * playerSettings.spawnLocation.x, initHeight * playerSettings.spawnLocation.y, this.playerStayed ? "stay_home" : "out_home");
+    this.home = this.physics.add.sprite(initWidth * playerSettings.spawnLocation.x, initHeight * playerSettings.spawnLocation.y, "stay_home");
 
     this.home.setTint(0x000000);
     this.home.setCircle(200, -100, -100);
@@ -70,7 +70,8 @@ export default class MainScene extends Scene {
 
     this.home_char.play("wave", true, Math.floor(Math.random() * 30));
     this.home_char.setTint(0x000000);
-    this.home_char.setScale(0.4, 0.4);
+    this.home_char.setOrigin(0.5,0.25);
+    this.home_char.setScale(0.5, 0.5);
     this.home_char.visible= this.playerStayed;
     //
 
