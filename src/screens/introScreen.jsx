@@ -3,8 +3,8 @@ import { Flex } from "rebass";
 import { Redirect } from "react-router-dom";
 import { ShortText } from "../components/Text";
 import { CircleButton } from "../components/UI";
-import OutIcon from "../components/icon/leave_icon";
-import StayIcon from "../components/icon/stay_icon";
+import NoDistanceIcon from "../components/icon/no_distance_icon";
+import DistancingIcon from "../components/icon/distance_icon";
 class IntroScreen extends Component {
 
     constructor(props) {
@@ -13,6 +13,9 @@ class IntroScreen extends Component {
             goToGame: false,
             stay: false,
         };
+
+        this.choiceA = "Distancing";
+        this.choiceB = "No Distancing";
     }
 
     render() {
@@ -22,33 +25,33 @@ class IntroScreen extends Component {
                 alignItems='center'
                 height='100%'
                 justifyContent='center'
-                >
+            >
                 <Flex flexDirection='column' width='fit-content'>
-                <Flex
-                    flexDirection='column'
-                    alignItems='center'
-                    mb={4}>
-                    <ShortText m={2} fontSize={[ 3, 4]}>There’s a new virus in town.</ShortText>
-                    <ShortText m={2} fontSize={[3, 4]}>{'Shadowpox is highly contagious.\n1 in 5 of those infected will become very sick.\nSome will die. '}</ShortText>
-                    <ShortText m={2} fontSize={[ 3, 4]}>Without knowing it, you might be a carrier.</ShortText>
-                    <ShortText m={2} fontSize={[ 3, 4]}>{'Will you #StayHome to save lives?'} </ShortText>
-                </Flex>
-                <Flex m={3} justifyContent='space-evenly'>
                     <Flex
-                        flexDirection='column'>
-                        <CircleButton m={2} onClick={() => { this.onClick(true) }}>
-                            <StayIcon />
-                        </CircleButton>
-                        <ShortText fontWeight='bold'>Stay Home</ShortText>
+                        flexDirection='column'
+                        alignItems='center'
+                        mb={4}>
+                        <ShortText m={2} fontSize={[3, 4]}>There’s a new virus in town.</ShortText>
+                        <ShortText m={2} fontSize={[3, 4]}>{'Shadowpox is highly contagious.\n1 in 5 of those infected will become very sick.\nSome will die. '}</ShortText>
+                        <ShortText m={2} fontSize={[3, 4]}>Without knowing it, you might be a carrier.</ShortText>
+                        <ShortText m={2} fontSize={[3, 4]}>{'Will you #StayHome to save lives?'} </ShortText>
                     </Flex>
-                    <Flex
-                        flexDirection='column'>
-                        <CircleButton m={2} onClick={() => { this.onClick(false) }}>
-                            <OutIcon />
-                        </CircleButton>
-                        <ShortText fontWeight='bold'>Go Out</ShortText>
+                    <Flex m={3} justifyContent='space-evenly'>
+                        <Flex
+                            flexDirection='column'>
+                            <CircleButton m={2} onClick={() => { this.onClick(true) }}>
+                                <DistancingIcon />
+                            </CircleButton>
+                            <ShortText fontWeight='bold'>{this.choiceA}</ShortText>
+                        </Flex>
+                        <Flex
+                            flexDirection='column'>
+                            <CircleButton m={2} onClick={() => { this.onClick(false) }}>
+                                <NoDistanceIcon />
+                            </CircleButton>
+                            <ShortText fontWeight='bold'>{this.choiceB}</ShortText>
+                        </Flex>
                     </Flex>
-                </Flex>
                 </Flex>
                 {this.RedirectToGameScreen()}
             </Flex>
