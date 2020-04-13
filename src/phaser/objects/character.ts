@@ -6,7 +6,7 @@ export enum CharacterState {
   Healthy,
   Sick,
   Quarantine,
-  Dead
+  Hospitalized,
 }
 
 export default class Character extends Phaser.GameObjects.Sprite {
@@ -121,7 +121,7 @@ export default class Character extends Phaser.GameObjects.Sprite {
         this.play("sick", true);
         this.setTint(0xffffff);
         break;
-      case CharacterState.Dead:
+      case CharacterState.Hospitalized:
         this.setTexture('character', 'dead-figure.png');
         this.setTint(0xffffff);
         this.drawCircle();
@@ -144,6 +144,7 @@ export default class Character extends Phaser.GameObjects.Sprite {
         this.body.enable = false;
         break;
       case CharacterState.Healthy:
+        // this.setVelocity(this.unscaleVelocity.x, this.unscaleVelocity.y);
         this.body.enable = true;
         break;
       case CharacterState.Home:
@@ -151,10 +152,9 @@ export default class Character extends Phaser.GameObjects.Sprite {
         this.body.enable = false;
         break;
       case CharacterState.Sick:
-
         this.body.enable = true;
         break;
-      case CharacterState.Dead:
+      case CharacterState.Hospitalized:
         this.setVelocity(0);
         this.body.enable = false;
         break;
@@ -179,12 +179,12 @@ export default class Character extends Phaser.GameObjects.Sprite {
         vel.y = vel.y * 0.5;
         this.setVelocity(vel.x, vel.y);
         this.setState(CharacterState.Sick);
-        this.emit('gotSick');
+        this.emit('gotSick',this);
 
         const rate = Phaser.Math.Between(gConfigTrail.deathCall.min ?? 3, gConfigTrail.deathCall.max ?? 14);
         this.scene.time.addEvent({
           delay: 1000 * rate,
-          callback: this.died,
+          callback: this.hospitalized,
           callbackScope: this,
           loop: false
         });
@@ -193,11 +193,12 @@ export default class Character extends Phaser.GameObjects.Sprite {
     this.lastEnounter = this.scene.game.getTime() / 1000;
   }
 
-  died() {
+  hospitalized() {
     const precent = Math.random();
     if (precent <= gConfigTrail.deathRate) {
       this.setID(this.cId * -1);
-      this.setState(CharacterState.Dead);
+      this.setState(CharacterState.Hospitalized);
+      this.emit("hospitalized",this);
     }
   }
 

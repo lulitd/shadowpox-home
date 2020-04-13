@@ -43,8 +43,6 @@ export default class GameComponent extends Component<GameProp,{}>{
       
          const game = new Phaser.Game(config);
 
-        // console.log(this.props);
-
          const {stayed:playerChoice} = this.props;
           //@ts-ignore
           game.propsFromReact={stayed:playerChoice};

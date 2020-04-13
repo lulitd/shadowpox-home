@@ -9,7 +9,8 @@ import { GAME_EVENTS } from "../data/const";
 
 export default class MainScene extends Scene {
   player: PlayerCharacter;
-  neighbours: Phaser.Physics.Arcade.Group;
+  healthyNeighbours: Phaser.Physics.Arcade.Group;
+  sickNeighbours: Phaser.Physics.Arcade.Group;
   home: Phaser.Physics.Arcade.Sprite;
   // home_char: GameObjects.Sprite;
   FPS: FPS;
@@ -93,9 +94,13 @@ export default class MainScene extends Scene {
     this.activateTrail(!this.player.isHome);
 
     // Neighbours setup
-    this.neighbours = this.physics.add.group({
+    this.healthyNeighbours = this.physics.add.group({
       maxSize: MainScene.neighbourLimit
     });
+    this.sickNeighbours = this.physics.add.group({
+      maxSize: MainScene.neighbourLimit
+    });
+
     this.InnerBounds = new Geom.Rectangle(0, 0, this.game.scale.width, this.game.scale.height);
 
     this.OuterBounds = new Geom.Rectangle(-100, -100, this.game.scale.width + 200, this.game.scale.height + 200);
@@ -109,11 +114,12 @@ export default class MainScene extends Scene {
         const spawnPoint = Geom.Rectangle.RandomOutside(this.OuterBounds, this.InnerBounds);
         const neighbour = new Character(this, spawnPoint.x, spawnPoint.y);
         neighbour.setTint(gNeighbour.tint);
-        this.neighbours.add(neighbour);
+        this.healthyNeighbours.add(neighbour);
         neighbour.resizeToFitDisplay(this.scale.width, this.scale.height, this.scale.width, this.scale.height, gNeighbour.relScale);
-        neighbour.setID(this.neighbours.getLength());
+        neighbour.setID(this.healthyNeighbours.getLength());
 
-        neighbour.addListener('gotSick', this.addScore, this);
+        neighbour.once('gotSick', (neighbour: Character) => { this.neighbourGotSick(neighbour) }, this);
+        neighbour.once('hospitalized', (neighbour: Character) => { this.neighbourHospitalized(neighbour) }, this);
         neighbour.body.setCollideWorldBounds(true, 1, 1);
       },
       delay: this.gameLength * inverseNeighbours * (gConfigNeighbourhood.spawnedPrecent ?? 0.75),
@@ -166,10 +172,13 @@ export default class MainScene extends Scene {
     const prevBounds = this.physics.world.bounds;
     this.player.resizeToFitDisplay(width, height, prevBounds.width, prevBounds.height, gConfigPlayer.relScale);
 
-    Actions.Call(this.neighbours.getChildren(), (neighbour: Character) => {
+    Actions.Call(this.healthyNeighbours.getChildren(), (neighbour: Character) => {
       neighbour.resizeToFitDisplay(width, height, prevBounds.width, prevBounds.height, gNeighbour.relScale);
     }, this);
-    ;
+
+    Actions.Call(this.sickNeighbours.getChildren(), (neighbour: Character) => {
+      neighbour.resizeToFitDisplay(width, height, prevBounds.width, prevBounds.height, gNeighbour.relScale);
+    }, this);
 
     this.home.body.reset(width * gConfigPlayer.spawnLocation.x, height * gConfigPlayer.spawnLocation.y);
     // this.home.setScale(0.75 *this.player.scaleX, 0.75*this.player.scaleY);
@@ -211,13 +220,15 @@ export default class MainScene extends Scene {
     if (this.game.getFrame() % gConfigTrail.colisionCheck) {
       this.trail.forEachAlive(this.virusCheck, this);
     }
-    Actions.Call(this.neighbours.getChildren(), (neighbour: Character) => {
+    Actions.Call(this.healthyNeighbours.getChildren(), (neighbour: Character) => {
       neighbour.update();
     }, this);
 
-    this.physics.world.collide(this.home, this.neighbours, this.neighbourHouseCollision);
+    this.physics.world.collide(this.home, [this.healthyNeighbours, this.sickNeighbours], this.neighbourHouseCollision);
 
-    this.physics.world.overlap(this.player, this.neighbours, this.playerCollides, this.checkIfNeighbourSick);
+    this.physics.world.overlap(this.player, this.healthyNeighbours, this.playerCollides, this.checkIfNeighbourSick);
+
+    this.physics.world.overlap(this.sickNeighbours, this.healthyNeighbours, this.playerCollides, this.checkIfNeighbourSick);
   }
 
   playerIsHome(home, player) {
@@ -262,6 +273,8 @@ export default class MainScene extends Scene {
     }
   }
 
+
+
   toggleDebug() {
     this.DebugMode = !this.DebugMode;
   }
@@ -270,7 +283,7 @@ export default class MainScene extends Scene {
 
 
     if (this.trail != undefined && this.trail.on != shouldActivate) {
-      shouldActivate?this.trail.start():this.trail.stop();
+      shouldActivate ? this.trail.start() : this.trail.stop();
     }
   }
   virusCheck(particle: GameObjects.Particles.Particle, emitter: GameObjects.Particles.ParticleEmitter) {
@@ -292,10 +305,27 @@ export default class MainScene extends Scene {
     });
   }
 
-  addScore() {
+  neighbourHospitalized(neighbour: Character) {
+
+    if (neighbour != undefined) {
+      this.sickNeighbours.remove(neighbour);
+    }
+  }
+
+  neighbourGotSick(neighbour: Character) {
+
+    if (neighbour != undefined) {
+      this.sickNeighbours.add(neighbour);
+
+      neighbour.body.setCollideWorldBounds(true, 1, 1); //some physics gets resetted when adding to new group...
+      neighbour.body.onWorldBounds = true;
+      
+      neighbour.setVelocity(neighbour.unscaleVelocity.x, neighbour.unscaleVelocity.y);
+    }
     this.score++;
     this.updateScore(this.score);
   }
+
   updateScore(amount: number) {
     // @ts-ignore
     if (window.phaserEvents) {
@@ -339,9 +369,9 @@ export default class MainScene extends Scene {
 
     let infected: number[] = [];
 
-    Actions.Call(this.neighbours.getChildren(), (neighbour: Character) => {
+    Actions.Call(this.healthyNeighbours.getChildren(), (neighbour: Character) => {
 
-      if (neighbour.state === CharacterState.Sick || neighbour.state === CharacterState.Dead)
+      if (neighbour.state === CharacterState.Sick || neighbour.state === CharacterState.Hospitalized)
         infected.push(neighbour.cId);
     }, this);
 
