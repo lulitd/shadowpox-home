@@ -22,8 +22,7 @@ export default class MainScene extends Scene {
   OuterBounds: Geom.Rectangle;
   DebugMode: boolean = false;
   score: number = 0;
-  playerStayed = false;
-  playerCurrentHome = false;
+  activateDistancing: boolean;
 
   constructor() {
     super({ key: 'GameScene' });
@@ -44,7 +43,7 @@ export default class MainScene extends Scene {
     const initHeight = window.innerHeight;
     const playerSettings = gConfigPlayer;
     //@ts-ignore
-    this.playerStayed = this.game.propsFromReact.stayed;
+    this.activateDistancing = this.game.propsFromReact.stayed;
 
 
 
@@ -52,7 +51,7 @@ export default class MainScene extends Scene {
 
     //PLAYER SETUP
     this.player = new PlayerCharacter(this, initWidth * playerSettings.spawnLocation.x, initHeight * playerSettings.spawnLocation.y);
-    this.player.isHome = this.playerStayed;
+    this.player.isHome = true;
 
     if (this.DebugMode) {
       this.player.setTint(debugColors.player ?? 0x00ff00);
@@ -91,6 +90,8 @@ export default class MainScene extends Scene {
         })
     ).reserve(gConfigTrail.limit ?? 100).startFollow(this.player, 0, this.player.height * this.player.scaleY * 0.75);
 
+    this.activateTrail(!this.player.isHome);
+
     // Neighbours setup
     this.neighbours = this.physics.add.group({
       maxSize: MainScene.neighbourLimit
@@ -116,7 +117,7 @@ export default class MainScene extends Scene {
         neighbour.body.setCollideWorldBounds(true, 1, 1);
       },
       delay: this.gameLength * inverseNeighbours * (gConfigNeighbourhood.spawnedPrecent ?? 0.75),
-      startAt: gConfigGeneral.gameStartDelay??3,
+      startAt: gConfigGeneral.gameStartDelay ?? 3,
     });
 
 
@@ -127,7 +128,7 @@ export default class MainScene extends Scene {
       callback: this.onCountdown,
       callbackScope: this,
       loop: true,
-      startAt: gConfigGeneral.gameStartDelay??3
+      startAt: gConfigGeneral.gameStartDelay ?? 3
     });
 
     // SETUP EVENT LISTENERS
@@ -196,12 +197,16 @@ export default class MainScene extends Scene {
 
   update() {
     if (!this.game) return;
-    this.playerCurrentHome = false;
     this.FPS.update();
     this.player.update();
+    this.player.isHome = false;
 
     this.FPS.setVisible(this.DebugMode);
     this.player.setTint(this.DebugMode ? debugColors.player : gConfigPlayer.tint);
+
+    this.physics.world.overlap(this.home, this.player, this.playerIsHome, null, this);
+
+    this.activateTrail(!this.player.isHome);
 
     if (this.game.getFrame() % gConfigTrail.colisionCheck) {
       this.trail.forEachAlive(this.virusCheck, this);
@@ -214,11 +219,20 @@ export default class MainScene extends Scene {
 
     this.physics.world.overlap(this.player, this.neighbours, this.playerCollides, this.checkIfNeighbourSick);
   }
+
+  playerIsHome(home, player) {
+
+    if (player instanceof PlayerCharacter) {
+      player.isHome = true;
+    }
+  }
+
   playerCollides(player, neighbour) {
     if (neighbour instanceof Character && !(neighbour instanceof PlayerCharacter)) {
       neighbour.getInfected('contact');
     }
   }
+
   checkIfNeighbourSick(player, neighbour) {
     if (neighbour instanceof Character && !(neighbour instanceof PlayerCharacter)) {
       return neighbour.state === CharacterState.Healthy;
@@ -252,6 +266,13 @@ export default class MainScene extends Scene {
     this.DebugMode = !this.DebugMode;
   }
 
+  activateTrail(shouldActivate: boolean) {
+
+
+    if (this.trail != undefined && this.trail.on != shouldActivate) {
+      shouldActivate?this.trail.start():this.trail.stop();
+    }
+  }
   virusCheck(particle: GameObjects.Particles.Particle, emitter: GameObjects.Particles.ParticleEmitter) {
 
     const impact = this.physics.overlapCirc(particle.x, particle.y, particle.scaleX * gConfigTrail.collisonRadius, true, false);

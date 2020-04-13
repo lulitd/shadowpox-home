@@ -57,7 +57,7 @@ export default class PlayerCharacter extends Character {
     this.geomCircle.setPosition(this.x, this.y + (this.scaleY * this.height * 0.5));
     this.graphics.clear();
     const current = this.tintTopLeft;
-    this.graphics.fillStyle(0xffffff - current,this.isHome?this.alphaTweener.getValue():1);
+    this.graphics.fillStyle(0xffffff - current,this.alphaTweener.getValue());
     this.graphics.lineStyle(2,current, 1);
     this.graphics.fillCircleShape(this.geomCircle);
     this.graphics.strokeCircleShape(this.geomCircle);
