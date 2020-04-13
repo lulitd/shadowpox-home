@@ -26,6 +26,8 @@ class EndScreen extends Component {
     this.textStayed = ["Because you chose to stay home, {{infected}} people in your community did not catch the shadowpox virus from you.", "{{hospital}} of these would have needed hospital care."];
     this.textOut = ["Because you chose not to stay home, {{infected}} people in your community caught the shadowpox virus from you.", "{{hospital}} of these needed hospital care."];
 
+    this.textZero = ["Congratulations!","Because you stayed at home, no one in your community caught the shadowpox virus from you, and no one needed hospital care."];
+
   }
 
   render() {
@@ -74,7 +76,7 @@ class EndScreen extends Component {
     const { cards, stayedHome } = this.state;
     const sick = cards?.length;
     const hospital = cards.filter(c => c < 0).length ?? 0;
-    const text = stayedHome ? this.textStayed : this.textOut;
+    const text = sick == 0 ? this.textZero : (stayedHome ? this.textStayed : this.textOut);
     return (
       <Flex flexDirection="column" alignItems="center" p={3} maxWidth='650px' textAlign='center' flex="1 1 auto" justifyContent='center'>
 
