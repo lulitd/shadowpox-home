@@ -19,8 +19,8 @@ export default class PlayerCharacter extends Character {
     this.graphics.fillCircleShape(this.geomCircle);
 
     this.alphaTweener = this.scene.tweens.addCounter({
-      from: 0.4,
-      to:0.8,
+      from: 0.3,
+      to:0.6,
       duration:1000,
       yoyo:true,
       repeat:-1,
