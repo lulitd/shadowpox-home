@@ -41,7 +41,7 @@ const gConfigTrail ={
     limit: 100,
     colisionCheck: 30,
     collisonRadius: 16,
-    infectionRate: 0.2,
+    infectionRate: 0.5,
     deathRate: 0.2,
     deathCall:{min:3,max:7}
 };
