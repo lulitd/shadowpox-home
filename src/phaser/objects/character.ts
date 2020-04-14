@@ -119,7 +119,7 @@ export default class Character extends Phaser.GameObjects.Sprite {
     this.graphics.fillStyle(0xffffff - current,alpha??this.alphaTweener.getValue());
     this.graphics.lineStyle(2, current,alpha??this.alphaTweener.getValue());
     this.graphics.fillCircleShape(this.geomCircle);
-    this.graphics.strokeCircleShape(this.geomCircle);
+//    this.graphics.strokeCircleShape(this.geomCircle);
     this.graphics.setDepth(this.depth - 1);
 
   }
