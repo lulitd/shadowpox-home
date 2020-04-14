@@ -22,9 +22,10 @@ export default class Character extends Phaser.GameObjects.Sprite {
   shouldSeperate: boolean;
   readonly TEXTURE_WIDTH: number = 42;
   readonly TEXTURE_HEIGHT: number = 72;
-  ANGLES: number[];
-
-
+  
+  static readonly ANGLES = [0, 45, 90, 135, 180, 135, -90, -45];
+  vels: Array<Phaser.Geom.Point>;
+  ends: Array<Phaser.Geom.Point>;
 
   constructor(scene: Phaser.Scene, x: number, y: number, velMin: number = 50, velMax: number = 100) {
     super(scene, x, y, 'character')
@@ -63,7 +64,14 @@ export default class Character extends Phaser.GameObjects.Sprite {
     this.resizeToFitDisplay(scene.game.scale.width, scene.game.scale.height);
     this.body.setMaxSpeed(50);
 
-    this.ANGLES = [0, 45, 90, 135, 180, 135, -90, -45];
+    this.shouldSeperate=false; 
+    
+    this.vels = [];
+    this.ends = [];
+  }
+
+  debateOnSeperate(){
+    this.shouldSeperate =! this.shouldSeperate; 
   }
 
   setID(id: number) {
@@ -206,26 +214,33 @@ export default class Character extends Phaser.GameObjects.Sprite {
   seperation() {
     if (this.body == undefined) return;
 
+    if (Math.random() < 0.2) return;
     // this.Dgraphics.clear();
     const pos = this.body.center;
     const vel_0 = this.body.velocity.clone().normalize();
 
-    const vels: Array<Phaser.Geom.Point> = [];
-    const ends: Array<Phaser.Geom.Point> = [];
-    this.ANGLES.forEach(an => {
-      vels.push(Phaser.Math.Rotate(new Phaser.Geom.Point(vel_0.x, vel_0.y), Phaser.Math.DegToRad(an)));
+    Character.ANGLES.forEach((an,i) => {
+      if(this.vels.length-1<i){
+      this.vels.push(Phaser.Math.Rotate(new Phaser.Geom.Point(vel_0.x, vel_0.y), Phaser.Math.DegToRad(an)));
+      } else{
+        this.vels[i] = Phaser.Math.Rotate(new Phaser.Geom.Point(vel_0.x, vel_0.y), Phaser.Math.DegToRad(an));
+      }
     });
 
     const distA = this.displayHeight * 1.5;
     const outerRadius = this.displayHeight * 1;
 
-    vels.forEach(vel => {
-      ends.push(new Phaser.Geom.Point(pos.x + vel.x * distA, pos.y + vel.y * distA));
+    this.vels.forEach((vel,i) => {
+      if(this.ends.length<i){
+      this.ends.push(new Phaser.Geom.Point(pos.x + vel.x * distA, pos.y + vel.y * distA));
+      } else{
+        this.ends[i]=new Phaser.Geom.Point(pos.x + vel.x * distA, pos.y + vel.y * distA);
+      }
     });
 
     const cols = new Map<Number, Phaser.Physics.Arcade.Body[] | Phaser.Physics.Arcade.StaticBody[]>();
 
-    ends.forEach((p, i) => {
+    this.ends.forEach((p, i) => {
       cols.set(i, this.scene.physics.overlapCirc(p.x, p.y, outerRadius, true, true));
     });
 
@@ -246,13 +261,15 @@ export default class Character extends Phaser.GameObjects.Sprite {
     });
 
 
-    cols.forEach((col,i) => {
-      if (col.length<=0){
-        this.body.velocity.add(vels[i]);
-      } 
+    cols.forEach((col, i) => {
+      if (col.length <= 0) {
+        //@ts-ignore
+        this.body.velocity.add(this.vels[i.valueOf()]);
+      }
     }
     );
 
+    
 
     // if (isMid) {
     //   //this.Dgraphics.fillStyle(0xff0000, 0.1);
