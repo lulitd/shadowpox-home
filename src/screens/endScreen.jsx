@@ -40,7 +40,7 @@ class EndScreen extends Component {
           <Flex mx={4} my={4} flexDirection='column' alignItems='center' >
             <form encType="application/x-www-form-urlencoded" action="https://shadowpox.org/cards/" method="POST">
               <input hidden name="cards" type="text" size="32" readOnly={true} value={cards} />
-              <input hidden name="stayedhome" type="checkbox" readOnly={true} value='yes' checked={stayedHome} />
+              {/* <input hidden name="stayedhome" type="checkbox" readOnly={true} value='yes' checked={stayedHome} /> */}
               <MenuButton my='2' width={'fit-content'} type='submit' fontSize={[1, 2, 3]}>{`View your ${infected==0 ? 'Protection' : 'Infection'} Collection`}</MenuButton>
             </form>
             <MenuButton width='fit-content' fontSize={[1, 2, 3]} onClick={() => { this.OnReturn() }}>Try Again</MenuButton>
