@@ -126,6 +126,7 @@ export default class MainScene extends Scene {
         neighbour.once('hospitalized', (neighbour: Character) => { this.neighbourHospitalized(neighbour) }, this);
         neighbour.body.setCollideWorldBounds(true,1,1);
         neighbour.shouldSeperate = this.activateDistancing;
+
       },
       delay: this.gameLength * inverseNeighbours * (gConfigNeighbourhood.spawnedPrecent ?? 0.75),
       startAt: gConfigGeneral.gameStartDelay ?? 3,
@@ -206,11 +207,6 @@ export default class MainScene extends Scene {
     let char = body.gameObject;
     let dir = body.velocity;
     char.flipX = dir.x < 0; // flip based on their direction. 
-
-    //@ts-ignore
-    this.scene.physics.accelerateTo(body.gameObject,this.scene.CenterBounds.getRandomPoint(),100,100,100);
-
-
 
   }
 

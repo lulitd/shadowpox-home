@@ -6,7 +6,6 @@ export default class PlayerCharacter extends Character {
   respondThres: number = 20;
   respondSpeed: number = 75;
   isHome:boolean; 
-  alphaTweener:Phaser.Tweens.Tween;
 
   constructor(scene: Phaser.Scene, x: number, y: number) {
     super(scene, x, y);
@@ -19,8 +18,8 @@ export default class PlayerCharacter extends Character {
     this.graphics.fillCircleShape(this.geomCircle);
 
     this.alphaTweener = this.scene.tweens.addCounter({
-      from: 0.3,
-      to:0.6,
+      from: 0.2,
+      to:0.4,
       duration:1000,
       yoyo:true,
       repeat:-1,

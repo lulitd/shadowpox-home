@@ -22,10 +22,13 @@ export default class Character extends Phaser.GameObjects.Sprite {
   shouldSeperate: boolean;
   readonly TEXTURE_WIDTH: number = 42;
   readonly TEXTURE_HEIGHT: number = 72;
-  
+  hasCircle: boolean;
+
   static readonly ANGLES = [0, 45, 90, 135, 180, 135, -90, -45];
   vels: Array<Phaser.Geom.Point>;
   ends: Array<Phaser.Geom.Point>;
+
+  alphaTweener: Phaser.Tweens.Tween;
 
   constructor(scene: Phaser.Scene, x: number, y: number, velMin: number = 50, velMax: number = 100) {
     super(scene, x, y, 'character')
@@ -64,14 +67,23 @@ export default class Character extends Phaser.GameObjects.Sprite {
     this.resizeToFitDisplay(scene.game.scale.width, scene.game.scale.height);
     this.body.setMaxSpeed(50);
 
-    this.shouldSeperate=false; 
-    
+    this.shouldSeperate = false;
+
     this.vels = [];
     this.ends = [];
+
+    this.alphaTweener = this.scene.tweens.addCounter({
+      from:0.0,
+      to: 0.4,
+      duration: 100,
+      yoyo: true,
+      ease: 'Power2',
+      paused: true
+    });
   }
 
-  debateOnSeperate(){
-    this.shouldSeperate =! this.shouldSeperate; 
+  debateOnSeperate() {
+    this.shouldSeperate = !this.shouldSeperate;
   }
 
   setID(id: number) {
@@ -98,13 +110,14 @@ export default class Character extends Phaser.GameObjects.Sprite {
     this.setVelocity();
   }
 
-  drawCircle() {
+  drawCircle(alpha?:number) {
     this.geomCircle.radius = this.TEXTURE_HEIGHT * 0.6 * this.scaleY;
     this.geomCircle.setPosition(this.x, this.y + (this.scaleY * this.height * 0.5));
     this.graphics.clear();
+    if (!this.hasCircle) return;
     const current = this.tintTopLeft;
-    this.graphics.fillStyle(0xffffff - current, 1);
-    this.graphics.lineStyle(2, current, 1);
+    this.graphics.fillStyle(0xffffff - current,alpha??this.alphaTweener.getValue());
+    this.graphics.lineStyle(2, current,alpha??this.alphaTweener.getValue());
     this.graphics.fillCircleShape(this.geomCircle);
     this.graphics.strokeCircleShape(this.geomCircle);
     this.graphics.setDepth(this.depth - 1);
@@ -124,6 +137,7 @@ export default class Character extends Phaser.GameObjects.Sprite {
   animate() {
     const currentState = this.state;
 
+    this.drawCircle();
     switch (currentState) {
       case CharacterState.None:
 
@@ -142,12 +156,15 @@ export default class Character extends Phaser.GameObjects.Sprite {
       case CharacterState.Hospitalized:
         this.setTexture('character', 'dead-figure.png');
         this.setTint(0xffffff);
-        this.drawCircle();
+        this.hasCircle = true;
+
+        this.drawCircle(1);
         break;
 
       default:
         break;
     }
+
     this.flipX = this.body.velocity.x < 0;
 
   }
@@ -191,18 +208,34 @@ export default class Character extends Phaser.GameObjects.Sprite {
 
     // adding a buffer between checks
     if (currentTime - this.lastEnounter > 0.2) {
-      if (precent <= val) {
-        let vel = this.unscaleVelocity;
-        vel.x = vel.x * 0.5;
-        vel.y = vel.y * 0.5;
-        this.setVelocity(vel.x, vel.y);
-        this.setState(CharacterState.Sick);
-        this.emit('gotSick', this);
 
+      this.hasCircle = true;
+
+      this.setTint(0x555555);
+      this.alphaTweener.play();
+      if (precent <= val) {
+
+        this.scene.time.addEvent({
+          delay: 25,
+          callback: this.becomeSick,
+          callbackScope: this,
+          loop: false
+        });
         const rate = Phaser.Math.Between(gConfigTrail.deathCall.min ?? 3, gConfigTrail.deathCall.max ?? 14);
         this.scene.time.addEvent({
           delay: 1000 * rate,
           callback: this.hospitalized,
+          callbackScope: this,
+          loop: false
+        });
+      } else {
+        this.scene.time.addEvent({
+          delay: 200,
+          callback: () => {
+            this.hasCircle = false;
+            this.setTint(0x000000);
+           // this.alphaTweener.stop();
+          },
           callbackScope: this,
           loop: false
         });
@@ -211,18 +244,30 @@ export default class Character extends Phaser.GameObjects.Sprite {
     this.lastEnounter = this.scene.game.getTime() / 1000;
   }
 
+  becomeSick() {
+    let vel = this.unscaleVelocity;
+    vel.x = vel.x * 0.5;
+    vel.y = vel.y * 0.5;
+    this.setVelocity(vel.x, vel.y);
+
+    this.setTint(0xffffff);
+    this.setState(CharacterState.Sick);
+    this.emit('gotSick', this);
+    this.hasCircle = false;
+    this.alphaTweener.stop();
+  }
+
   seperation() {
     if (this.body == undefined) return;
 
     if (Math.random() < 0.2) return;
-    // this.Dgraphics.clear();
     const pos = this.body.center;
     const vel_0 = this.body.velocity.clone().normalize();
 
-    Character.ANGLES.forEach((an,i) => {
-      if(this.vels.length-1<i){
-      this.vels.push(Phaser.Math.Rotate(new Phaser.Geom.Point(vel_0.x, vel_0.y), Phaser.Math.DegToRad(an)));
-      } else{
+    Character.ANGLES.forEach((an, i) => {
+      if (this.vels.length - 1 < i) {
+        this.vels.push(Phaser.Math.Rotate(new Phaser.Geom.Point(vel_0.x, vel_0.y), Phaser.Math.DegToRad(an)));
+      } else {
         this.vels[i] = Phaser.Math.Rotate(new Phaser.Geom.Point(vel_0.x, vel_0.y), Phaser.Math.DegToRad(an));
       }
     });
@@ -230,11 +275,11 @@ export default class Character extends Phaser.GameObjects.Sprite {
     const distA = this.displayHeight * 1.5;
     const outerRadius = this.displayHeight * 1;
 
-    this.vels.forEach((vel,i) => {
-      if(this.ends.length<i){
-      this.ends.push(new Phaser.Geom.Point(pos.x + vel.x * distA, pos.y + vel.y * distA));
-      } else{
-        this.ends[i]=new Phaser.Geom.Point(pos.x + vel.x * distA, pos.y + vel.y * distA);
+    this.vels.forEach((vel, i) => {
+      if (this.ends.length < i) {
+        this.ends.push(new Phaser.Geom.Point(pos.x + vel.x * distA, pos.y + vel.y * distA));
+      } else {
+        this.ends[i] = new Phaser.Geom.Point(pos.x + vel.x * distA, pos.y + vel.y * distA);
       }
     });
 
@@ -243,14 +288,6 @@ export default class Character extends Phaser.GameObjects.Sprite {
     this.ends.forEach((p, i) => {
       cols.set(i, this.scene.physics.overlapCirc(p.x, p.y, outerRadius, true, true));
     });
-
-
-    // //@ts-ignore
-    // const midIndex = MidCol?.indexOf(this.body);
-    // //@ts-ignore
-    // const leftIndex = LeftCol?.indexOf(this.body);
-    // //@ts-ignore
-    // const RightIndex = RightCol?.indexOf(this.body);
 
     cols.forEach(col => {
       //@ts-ignore
@@ -269,37 +306,6 @@ export default class Character extends Phaser.GameObjects.Sprite {
     }
     );
 
-    
-
-    // if (isMid) {
-    //   //this.Dgraphics.fillStyle(0xff0000, 0.1);
-    //   //@ts-ignore
-    //   if (isLeft) this.body.velocity.add(velRight);
-    //   //@ts-ignore
-    //   if (isRight) this.body.velocity.add(velLeft);
-    //  //@ts-ignore
-    //   if (!isLeft && !isRight) this.body.velocity.add(velLeft);
-
-    // }
-    // // else { 
-    // //   this.Dgraphics.fillStyle(0x000000, 0.1); }
-    // // this.Dgraphics.fillCircle(PMid.x, PMid.y, midRadius);
-
-    // if (isLeft) {
-    //   // this.Dgraphics.fillStyle(0xff0000, 0.1);
-    //   //@ts-ignore
-    //   this.body.velocity.add(velRight);
-    // }
-    // // else { this.Dgraphics.fillStyle(0x000000, 0.1); }
-    // // this.Dgraphics.fillCircle(PLeft.x, PLeft.y, outerRadius);
-
-    // if (isRight) {
-    //   // this.Dgraphics.fillStyle(0xff0000, 0.1);
-    //   //@ts-ignore
-    //   this.body.velocity.add(velLeft);
-    // }
-    // // else { this.Dgraphics.fillStyle(0x000000, 0.1); }
-    // // this.Dgraphics.fillCircle(PRight.x, PRight.y, outerRadius);
 
   }
 
@@ -318,6 +324,7 @@ export default class Character extends Phaser.GameObjects.Sprite {
     if (this.shouldSeperate) this.seperation();
     this.updatePhysics();
     this.animate();
+
     this.depth = this.y + this.height / 2;
   }
 }

@@ -6,7 +6,6 @@ export default class PreloadScene extends Phaser.Scene {
     preload() {
       this.load.image('particle','assets/img/solid-circle-particle.png');
       this.load.image('stay_home','assets/img/stay-home-house.png');
-      this.load.image('out_home','assets/img/go-out-house.png');
    
      
       this.load.atlas('character','assets/sheet/animation.png', 'assets/sheet/animation.json');
@@ -17,7 +16,7 @@ export default class PreloadScene extends Phaser.Scene {
     create() {
   
       this.anims.create({ key: 'walk', frames: this.anims.generateFrameNames('character',{ 
-        start: 0, end: 29, zeroPad:1,
+        start: 0, end: 31, zeroPad:1,
         prefix: 'healthy_', suffix: '.png'
     }), repeat: -1 ,frameRate:30});
 
