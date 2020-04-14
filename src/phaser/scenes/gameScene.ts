@@ -9,7 +9,7 @@ import { GAME_EVENTS } from "../data/const";
 
 export default class MainScene extends Scene {
   player: PlayerCharacter;
-  healthyNeighbours: Phaser.Physics.Arcade.Group;
+  allNeighbours: Phaser.Physics.Arcade.Group;
   sickNeighbours: Phaser.Physics.Arcade.Group;
   home: Phaser.Physics.Arcade.Sprite;
   // home_char: GameObjects.Sprite;
@@ -19,6 +19,7 @@ export default class MainScene extends Scene {
   public static readonly neighbourLimit = 99;
   gameLength: number = 1000 * 60;
   timeRemaining: number = 60;
+  CenterBounds:Geom.Rectangle; 
   InnerBounds: Geom.Rectangle;
   OuterBounds: Geom.Rectangle;
   DebugMode: boolean = false;
@@ -94,7 +95,7 @@ export default class MainScene extends Scene {
     this.activateTrail(!this.player.isHome);
 
     // Neighbours setup
-    this.healthyNeighbours = this.physics.add.group({
+    this.allNeighbours = this.physics.add.group({
       maxSize: MainScene.neighbourLimit
     });
     this.sickNeighbours = this.physics.add.group({
@@ -102,6 +103,9 @@ export default class MainScene extends Scene {
     });
 
     this.InnerBounds = new Geom.Rectangle(0, 0, this.game.scale.width, this.game.scale.height);
+    const centerW = this.game.scale.width*0.25;
+    const centerH = this.game.scale.height*0.25;
+    this.CenterBounds = new Geom.Rectangle(this.game.scale.width*0.5-centerW*0.5,this.game.scale.height*0.5-centerH*0.5, centerW, centerH);
 
     this.OuterBounds = new Geom.Rectangle(-100, -100, this.game.scale.width + 200, this.game.scale.height + 200);
 
@@ -114,13 +118,14 @@ export default class MainScene extends Scene {
         const spawnPoint = Geom.Rectangle.RandomOutside(this.OuterBounds, this.InnerBounds);
         const neighbour = new Character(this, spawnPoint.x, spawnPoint.y);
         neighbour.setTint(gNeighbour.tint);
-        this.healthyNeighbours.add(neighbour);
+        this.allNeighbours.add(neighbour);
         neighbour.resizeToFitDisplay(this.scale.width, this.scale.height, this.scale.width, this.scale.height, gNeighbour.relScale);
-        neighbour.setID(this.healthyNeighbours.getLength());
+        neighbour.setID(this.allNeighbours.getLength());
 
         neighbour.once('gotSick', (neighbour: Character) => { this.neighbourGotSick(neighbour) }, this);
         neighbour.once('hospitalized', (neighbour: Character) => { this.neighbourHospitalized(neighbour) }, this);
-        neighbour.body.setCollideWorldBounds(true, 1, 1);
+        neighbour.body.setCollideWorldBounds(true,1,1);
+        neighbour.shouldSeperate = this.activateDistancing;
       },
       delay: this.gameLength * inverseNeighbours * (gConfigNeighbourhood.spawnedPrecent ?? 0.75),
       startAt: gConfigGeneral.gameStartDelay ?? 3,
@@ -172,7 +177,7 @@ export default class MainScene extends Scene {
     const prevBounds = this.physics.world.bounds;
     this.player.resizeToFitDisplay(width, height, prevBounds.width, prevBounds.height, gConfigPlayer.relScale);
 
-    Actions.Call(this.healthyNeighbours.getChildren(), (neighbour: Character) => {
+    Actions.Call(this.allNeighbours.getChildren(), (neighbour: Character) => {
       neighbour.resizeToFitDisplay(width, height, prevBounds.width, prevBounds.height, gNeighbour.relScale);
     }, this);
 
@@ -196,11 +201,16 @@ export default class MainScene extends Scene {
 
   }
 
-  onWorldBounds(body: { gameObject: any; velocity: any; }) {
+  onWorldBounds(body: { gameObject: any; velocity: Phaser.Math.Vector2 }) {
 
     let char = body.gameObject;
     let dir = body.velocity;
     char.flipX = dir.x < 0; // flip based on their direction. 
+
+    //@ts-ignore
+    this.scene.physics.accelerateTo(body.gameObject,this.scene.CenterBounds.getRandomPoint(),100,100,100);
+
+
 
   }
 
@@ -220,15 +230,19 @@ export default class MainScene extends Scene {
     if (this.game.getFrame() % gConfigTrail.colisionCheck) {
       this.trail.forEachAlive(this.virusCheck, this);
     }
-    Actions.Call(this.healthyNeighbours.getChildren(), (neighbour: Character) => {
+    Actions.Call(this.allNeighbours.getChildren(), (neighbour: Character) => {
       neighbour.update();
     }, this);
 
-    this.physics.world.collide(this.home, [this.healthyNeighbours, this.sickNeighbours], this.neighbourHouseCollision);
+    // checking home
+    this.physics.world.collide(this.home, [this.allNeighbours, this.sickNeighbours], this.neighbourHouseCollision);
 
-    this.physics.world.overlap(this.player, this.healthyNeighbours, this.playerCollides, this.checkIfNeighbourSick);
+    // player infecting neighbours
+    this.physics.world.overlap(this.player, this.allNeighbours, this.playerCollides, this.checkIfNeighbourSick);
 
-    this.physics.world.overlap(this.sickNeighbours, this.healthyNeighbours, this.playerCollides, this.checkIfNeighbourSick);
+    // sick infecting neighbours
+    this.physics.world.overlap(this.sickNeighbours, this.allNeighbours, this.playerCollides, this.checkIfNeighbourSick);
+
   }
 
   playerIsHome(home, player) {
@@ -305,6 +319,7 @@ export default class MainScene extends Scene {
     });
   }
 
+
   neighbourHospitalized(neighbour: Character) {
 
     if (neighbour != undefined) {
@@ -317,7 +332,7 @@ export default class MainScene extends Scene {
     if (neighbour != undefined) {
       this.sickNeighbours.add(neighbour);
 
-      neighbour.body.setCollideWorldBounds(true, 1, 1); //some physics gets resetted when adding to new group...
+      neighbour.body.setCollideWorldBounds(true, 1,1); //some physics gets resetted when adding to new group...
       neighbour.body.onWorldBounds = true;
       
       neighbour.setVelocity(neighbour.unscaleVelocity.x, neighbour.unscaleVelocity.y);
@@ -369,7 +384,7 @@ export default class MainScene extends Scene {
 
     let infected: number[] = [];
 
-    Actions.Call(this.healthyNeighbours.getChildren(), (neighbour: Character) => {
+    Actions.Call(this.allNeighbours.getChildren(), (neighbour: Character) => {
 
       if (neighbour.state === CharacterState.Sick || neighbour.state === CharacterState.Hospitalized)
         infected.push(neighbour.cId);

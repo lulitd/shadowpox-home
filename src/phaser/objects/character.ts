@@ -1,4 +1,4 @@
-import { gConfigTrail,gConfigPlayer} from '../data/gameConfig'
+import { gConfigTrail, gConfigPlayer } from '../data/gameConfig'
 
 export enum CharacterState {
   None,
@@ -9,6 +9,7 @@ export enum CharacterState {
   Hospitalized,
 }
 
+
 export default class Character extends Phaser.GameObjects.Sprite {
   body: Phaser.Physics.Arcade.Body;
   state: CharacterState;
@@ -16,9 +17,12 @@ export default class Character extends Phaser.GameObjects.Sprite {
   unscaleVelocity: Phaser.Math.Vector2;
   cId: number;
   graphics: Phaser.GameObjects.Graphics;
+  // Dgraphics: Phaser.GameObjects.Graphics;
   geomCircle: Phaser.Geom.Circle;
+  shouldSeperate: boolean;
   readonly TEXTURE_WIDTH: number = 42;
   readonly TEXTURE_HEIGHT: number = 72;
+  ANGLES: number[];
 
 
 
@@ -53,8 +57,13 @@ export default class Character extends Phaser.GameObjects.Sprite {
     this.graphics = scene.add.graphics();
     this.graphics.fillStyle(0x000000, 1);
 
+    // this.Dgraphics = scene.add.graphics();
+    // this.Dgraphics.lineStyle(0xff00ff, 1);
+
     this.resizeToFitDisplay(scene.game.scale.width, scene.game.scale.height);
-    this.body.setMaxSpeed(100);
+    this.body.setMaxSpeed(50);
+
+    this.ANGLES = [0, 45, 90, 135, 180, 135, -90, -45];
   }
 
   setID(id: number) {
@@ -86,7 +95,7 @@ export default class Character extends Phaser.GameObjects.Sprite {
     this.geomCircle.setPosition(this.x, this.y + (this.scaleY * this.height * 0.5));
     this.graphics.clear();
     const current = this.tintTopLeft;
-    this.graphics.fillStyle(0xffffff-current, 1);
+    this.graphics.fillStyle(0xffffff - current, 1);
     this.graphics.lineStyle(2, current, 1);
     this.graphics.fillCircleShape(this.geomCircle);
     this.graphics.strokeCircleShape(this.geomCircle);
@@ -120,6 +129,7 @@ export default class Character extends Phaser.GameObjects.Sprite {
       case CharacterState.Sick:
         this.play("sick", true);
         this.setTint(0xffffff);
+        this.body.setSize();
         break;
       case CharacterState.Hospitalized:
         this.setTexture('character', 'dead-figure.png');
@@ -164,13 +174,13 @@ export default class Character extends Phaser.GameObjects.Sprite {
     }
   }
 
-  getInfected(how?:string) {
+  getInfected(how?: string) {
 
     const precent = Math.random();
     const currentTime = this.scene.game.getTime() / 1000;
 
-    const val = how=='contact'?gConfigPlayer.infectionRate:gConfigTrail.infectionRate;
-  
+    const val = how == 'contact' ? gConfigPlayer.infectionRate : gConfigTrail.infectionRate;
+
     // adding a buffer between checks
     if (currentTime - this.lastEnounter > 0.2) {
       if (precent <= val) {
@@ -179,7 +189,7 @@ export default class Character extends Phaser.GameObjects.Sprite {
         vel.y = vel.y * 0.5;
         this.setVelocity(vel.x, vel.y);
         this.setState(CharacterState.Sick);
-        this.emit('gotSick',this);
+        this.emit('gotSick', this);
 
         const rate = Phaser.Math.Between(gConfigTrail.deathCall.min ?? 3, gConfigTrail.deathCall.max ?? 14);
         this.scene.time.addEvent({
@@ -193,18 +203,102 @@ export default class Character extends Phaser.GameObjects.Sprite {
     this.lastEnounter = this.scene.game.getTime() / 1000;
   }
 
+  seperation() {
+    if (this.body == undefined) return;
+
+    // this.Dgraphics.clear();
+    const pos = this.body.center;
+    const vel_0 = this.body.velocity.clone().normalize();
+
+    const vels: Array<Phaser.Geom.Point> = [];
+    const ends: Array<Phaser.Geom.Point> = [];
+    this.ANGLES.forEach(an => {
+      vels.push(Phaser.Math.Rotate(new Phaser.Geom.Point(vel_0.x, vel_0.y), Phaser.Math.DegToRad(an)));
+    });
+
+    const distA = this.displayHeight * 1.5;
+    const outerRadius = this.displayHeight * 1;
+
+    vels.forEach(vel => {
+      ends.push(new Phaser.Geom.Point(pos.x + vel.x * distA, pos.y + vel.y * distA));
+    });
+
+    const cols = new Map<Number, Phaser.Physics.Arcade.Body[] | Phaser.Physics.Arcade.StaticBody[]>();
+
+    ends.forEach((p, i) => {
+      cols.set(i, this.scene.physics.overlapCirc(p.x, p.y, outerRadius, true, true));
+    });
+
+
+    // //@ts-ignore
+    // const midIndex = MidCol?.indexOf(this.body);
+    // //@ts-ignore
+    // const leftIndex = LeftCol?.indexOf(this.body);
+    // //@ts-ignore
+    // const RightIndex = RightCol?.indexOf(this.body);
+
+    cols.forEach(col => {
+      //@ts-ignore
+      const contains = col?.indexOf(this.body);
+      if (contains >= 0) {
+        col.splice(contains, 1);
+      }
+    });
+
+
+    cols.forEach((col,i) => {
+      if (col.length<=0){
+        this.body.velocity.add(vels[i]);
+      } 
+    }
+    );
+
+
+    // if (isMid) {
+    //   //this.Dgraphics.fillStyle(0xff0000, 0.1);
+    //   //@ts-ignore
+    //   if (isLeft) this.body.velocity.add(velRight);
+    //   //@ts-ignore
+    //   if (isRight) this.body.velocity.add(velLeft);
+    //  //@ts-ignore
+    //   if (!isLeft && !isRight) this.body.velocity.add(velLeft);
+
+    // }
+    // // else { 
+    // //   this.Dgraphics.fillStyle(0x000000, 0.1); }
+    // // this.Dgraphics.fillCircle(PMid.x, PMid.y, midRadius);
+
+    // if (isLeft) {
+    //   // this.Dgraphics.fillStyle(0xff0000, 0.1);
+    //   //@ts-ignore
+    //   this.body.velocity.add(velRight);
+    // }
+    // // else { this.Dgraphics.fillStyle(0x000000, 0.1); }
+    // // this.Dgraphics.fillCircle(PLeft.x, PLeft.y, outerRadius);
+
+    // if (isRight) {
+    //   // this.Dgraphics.fillStyle(0xff0000, 0.1);
+    //   //@ts-ignore
+    //   this.body.velocity.add(velLeft);
+    // }
+    // // else { this.Dgraphics.fillStyle(0x000000, 0.1); }
+    // // this.Dgraphics.fillCircle(PRight.x, PRight.y, outerRadius);
+
+  }
+
   hospitalized() {
     const precent = Math.random();
     if (precent <= gConfigTrail.deathRate) {
       this.setID(this.cId * -1);
       this.setState(CharacterState.Hospitalized);
-      this.emit("hospitalized",this);
+      this.emit("hospitalized", this);
     }
   }
 
 
   update() {
     if (!this.scene) return;
+    if (this.shouldSeperate) this.seperation();
     this.updatePhysics();
     this.animate();
     this.depth = this.y + this.height / 2;
